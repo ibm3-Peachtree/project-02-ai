@@ -5,8 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import init_db_connections, close_db_connections
 import config
-from routers.mas1_router import mas1_router
-from apps.mas1_incident.workers import incident_stream_listener
+from routers.mas01_router import mas01_router
+from apps.mas01_incident.workers import redis_topis_listener
 # from apps.mas2_router.workers import router_stream_listener # 추후 확장 시 주석 해제
 
 @asynccontextmanager
@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     await init_db_connections()
     print("=== [System] FastAPI 시작 및 MAS 워커 가동 ===")
     # MAS1 워커 가동 (Redis Stream 구독 시작)
-    mas1_task = asyncio.create_task(incident_stream_listener())
+    mas01_task = asyncio.create_task(redis_topis_listener())
     
     # 만약 MAS2가 추가된다면 아래처럼 타스크만 추가해주면 레이어가 분리됩니다.
     # mas2_task = asyncio.create_task(router_stream_listener())
@@ -27,9 +27,9 @@ async def lifespan(app: FastAPI):
     
     # [Shutdown] 서버가 꺼질 때 백그라운드 워커 안전하게 안전하게 종료
     print("=== [System] FastAPI 종료 및 MAS 워커 정지 ===")
-    mas1_task.cancel()
+    mas01_task.cancel()
     try:
-        await mas1_task
+        await mas01_task
     except asyncio.CancelledError:
         pass
 
@@ -58,7 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(mas1_router, prefix=config.API_PREFIX)
+app.include_router(mas01_router, prefix=config.API_PREFIX)
 
 @app.get("/health")
 def health_check():

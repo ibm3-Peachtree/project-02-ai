@@ -1,0 +1,1 @@
+vllm serve kakaocorp/kanana-1.5-2.1b-instruct-2505 --port 8001 --trust-remote-code

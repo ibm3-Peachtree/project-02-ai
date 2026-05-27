@@ -5,8 +5,10 @@ import logging
 from dotenv import load_dotenv
 import asyncio
 from sshtunnel import SSHTunnelForwarder
-import redis.asyncio as aioredis              # 💡 지난 코드에서 빠진 import도 추가하세요!
+import redis.asyncio as aioredis
 from neo4j import AsyncGraphDatabase
+import aiomysql
+from transformers import 
 
 load_dotenv()
 
@@ -15,35 +17,48 @@ logger.setLevel(logging.INFO)
 
 API_PREFIX = "/api/v0/ai"
 
-BASTION_HOST=os.getenv("BASTION_HOST")
-BASTION_USER=os.getenv("BASTION_USER")
-SSH_KEY_PATH=os.getenv("SSH_KEY_PATH")
+BASTION_HOST = os.getenv("BASTION_HOST")
+BASTION_USER = os.getenv("BASTION_USER")
+SSH_KEY_PATH = os.getenv("SSH_KEY_PATH")
 
-REDIS_HOST=os.getenv("REDIS_HOST")
-REDIS_PORT=os.getenv("REDIS_PORT")
-REDIS_PASSWORD=os.getenv("REDIS_PASSWORD")
-REDIS_LOCAL_BIND_PORT=os.getenv("REDIS_LOCAL_BIND_PORT")
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+REDIS_LOCAL_BIND_PORT = os.getenv("REDIS_LOCAL_BIND_PORT")
 
-NEO4J_HOST=os.getenv("NEO4J_HOST")
-NEO4J_USER=os.getenv("NEO4J_USER")
-NEO4J_PORT=os.getenv("NEO4J_PORT")
-NEO4J_PASSWORD=os.getenv("NEO4J_PASSWORD")
-NEO4J_LOCAL_BIND_PORT=os.getenv("NEO4J_LOCAL_BIND_PORT")
+NEO4J_HOST = os.getenv("NEO4J_HOST")
+NEO4J_USER = os.getenv("NEO4J_USER")
+NEO4J_PORT = os.getenv("NEO4J_PORT")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
+NEO4J_LOCAL_BIND_PORT = os.getenv("NEO4J_LOCAL_BIND_PORT")
 
+MYSQL_HOST = os.getenv("MYSQL_HOST")
+MYSQL_USER = os.getenv("MYSQL_USER")
+MYSQL_PORT = os.getenv("MYSQL_PORT")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+MYSQL_LOCAL_BIND_PORT = os.getenv("MYSQL_LOCAL_BIND_PORT")
+MYSQL_DB = os.getenv("MYSQL_DB")
+
+KAKAO_RESTAPI = os.getenv("KAKAO_RESTAPI")
+KANANA_MODEL_01_URL = "http://127.0.0.1:8001/v1" # kakaocorp/kanana-1.5-2.1b-instruct-2505
+
+# 초기 상태는 None
 ssh_tunnel_redis = None
 ssh_tunnel_neo4j = None
+ssh_tunnel_mysql = None
 
 redis_client = None
-neo4j_client = None  # Neo4j Driver 객체
+neo4j_client = None
+mysql_pool = None
 
 
 async def init_db_connections():
-    global ssh_tunnel_redis, ssh_tunnel_neo4j, redis_client, neo4j_client
+    global ssh_tunnel_redis, ssh_tunnel_neo4j, ssh_tunnel_mysql
+    global redis_client, neo4j_client, mysql_pool
     
-    # 루프 이벤트를 가져옵니다 (sshtunnel 백그라운드 스레드와 연동 안정성 확보)
     loop = asyncio.get_running_loop()
 
-    # 1️⃣ Redis SSH 터널 활성화 (로컬 임의 포트 -> 원격 Redis 포트)
+    # Redis SSH 터널 활성화
     ssh_tunnel_redis = SSHTunnelForwarder(
         (BASTION_HOST, 22),
         ssh_username=BASTION_USER,
@@ -51,13 +66,10 @@ async def init_db_connections():
         remote_bind_address=(REDIS_HOST, int(REDIS_PORT)),
         local_bind_address=('127.0.0.1', int(REDIS_LOCAL_BIND_PORT))
     )
-    
-    # 동기 함수인 .start()를 비동기 루프에서 실행
     await loop.run_in_executor(None, ssh_tunnel_redis.start)
+    logger.info("config.init_db_connections : 1 Redis SSH 터널 활성화 성공")
     
-    logger.info("1️⃣ Redis SSH 터널 활성화 (로컬 임의 포트 -> 원격 Redis 포트)")
-    
-    # 2️⃣ Neo4j SSH 터널 활성화 (로컬 임의 포트 -> 원격 Neo4j Bolt 포트)
+    # Neo4j SSH 터널 활성화
     ssh_tunnel_neo4j = SSHTunnelForwarder(
         (BASTION_HOST, 22),
         ssh_username=BASTION_USER,
@@ -65,48 +77,72 @@ async def init_db_connections():
         remote_bind_address=(NEO4J_HOST, int(NEO4J_PORT)),
         local_bind_address=('127.0.0.1', int(NEO4J_LOCAL_BIND_PORT))
     )
-    
     await loop.run_in_executor(None, ssh_tunnel_neo4j.start)
+    logger.info("config.init_db_connections : 2 Neo4j SSH 터널 활성화 성공")
     
-    logger.info("2️⃣ Neo4j SSH 터널 활성화 (로컬 임의 포트 -> 원격 Neo4j Bolt 포트)")
+    # MySQL SSH 터널 활성화
+    ssh_tunnel_mysql = SSHTunnelForwarder(
+        (BASTION_HOST, 22),
+        ssh_username=BASTION_USER,
+        ssh_pkey=SSH_KEY_PATH,
+        remote_bind_address=(MYSQL_HOST, int(MYSQL_PORT)),
+        local_bind_address=('127.0.0.1', int(MYSQL_LOCAL_BIND_PORT))
+    )
+    await loop.run_in_executor(None, ssh_tunnel_mysql.start)
+    logger.info("config.init_db_connections : 3 MySQL SSH 터널 활성화 성공")
 
-    # 3️⃣ 터널이 열어준 로컬 포트로 클라이언트 연결
-    # Redis 연결
+    # 실객체 할당 및 전역 컨텍스트 바인딩
     local_redis_port = ssh_tunnel_redis.local_bind_port
     redis_client = aioredis.from_url(
         f"redis://127.0.0.1:{local_redis_port}", 
         password=REDIS_PASSWORD,
         decode_responses=True
     )
+    logger.info("config.init_db_connections : 4 터널 바인딩 완료: Redis 클라이언트")
     
-    logger.info("3️⃣ 터널이 열어준 로컬 포트로 클라이언트 연결 : Redis")
-    
-    # Neo4j 연결 (Bolt 프로토콜 이용)
     local_neo4j_port = ssh_tunnel_neo4j.local_bind_port
     neo4j_client = AsyncGraphDatabase.driver(
         f"bolt://127.0.0.1:{local_neo4j_port}", 
         auth=("neo4j", NEO4J_PASSWORD)
     )
+    logger.info("config.init_db_connections : 4 터널 바인딩 완료: Neo4j 드라이버")
     
-    logger.info("3️⃣ 터널이 열어준 로컬 포트로 클라이언트 연결 : Neo4j")
-    logger.info(f"✅ SSH 터널 및 DB 클라이언트 연결 성공!")
-    logger.info(f"👉 Redis 포트 맵핑: {local_redis_port} -> {REDIS_PORT}")
-    logger.info(f"👉 Neo4j 포트 맵핑: {local_neo4j_port} -> {NEO4J_PORT}")
+    local_mysql_port = ssh_tunnel_mysql.local_bind_port
+    mysql_pool = await aiomysql.create_pool(
+        host='127.0.0.1',
+        port=local_mysql_port,
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        db=MYSQL_DB,
+        autocommit=True,
+        minsize=1,
+        maxsize=10,
+        loop=loop
+    )
+    logger.info("config.init_db_connections : 4 터널 바인딩 완료: MySQL 커넥션 풀")
+    
+    logger.info("config.init_db_connections : 모든 인프라 SSH 터널 및 글로벌 DB 클라이언트 개통 성공")
 
 
 async def close_db_connections():
-    global ssh_tunnel_redis, ssh_tunnel_neo4j, redis_client, neo4j_client
+    global ssh_tunnel_redis, ssh_tunnel_neo4j, ssh_tunnel_mysql
+    global redis_client, neo4j_client, mysql_pool
     
-    # 클라이언트 및 터널 종료
     if redis_client:
         await redis_client.close()
     if neo4j_client:
         await neo4j_client.close()
-        
+    if mysql_pool: 
+        mysql_pool.close()
+        await mysql_pool.wait_closed()    
+    
     loop = asyncio.get_running_loop()
     if ssh_tunnel_redis:
         await loop.run_in_executor(None, ssh_tunnel_redis.stop)
     if ssh_tunnel_neo4j:
         await loop.run_in_executor(None, ssh_tunnel_neo4j.stop)
+    if ssh_tunnel_mysql:
+        await loop.run_in_executor(None, ssh_tunnel_mysql.stop)
         
-    logger.info("🔒 SSH 터널 및 DB 클라이언트 안전하게 종료됨.")
+    logger.info("config.close_db_connections : SSH 터널 및 DB 클라이언트 자원 회수")
+    
