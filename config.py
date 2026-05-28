@@ -8,7 +8,7 @@ from sshtunnel import SSHTunnelForwarder
 import redis.asyncio as aioredis
 from neo4j import AsyncGraphDatabase
 import aiomysql
-from transformers import 
+import geopandas as gpd
 
 load_dotenv()
 
@@ -41,6 +41,10 @@ MYSQL_DB = os.getenv("MYSQL_DB")
 
 KAKAO_RESTAPI = os.getenv("KAKAO_RESTAPI")
 KANANA_MODEL_01_URL = "http://127.0.0.1:8001/v1" # kakaocorp/kanana-1.5-2.1b-instruct-2505
+KANANA_MODEL_02_URL = "http://127.0.0.1:8002/v1" # kakaocorp/kanana-1.5-2.1b-instruct-2505
+
+SEOUL_ROADNAME_API = os.getenv("SEOUL_ROADNAME_API")
+
 
 # 초기 상태는 None
 ssh_tunnel_redis = None
@@ -51,6 +55,19 @@ redis_client = None
 neo4j_client = None
 mysql_pool = None
 
+SHP_DIR = os.path.join(os.path.dirname(__file__), "[2026-01-13]NODELINKDATA")
+LINK_GDF = None
+NODE_GDF = None
+
+async def init_gdf() :
+    global LINK_GDF, NODE_GDF
+    logger.info("config.init_gdf 데이터 로드 시작")
+    LINK_GDF = gpd.read_file(os.path.join(SHP_DIR, "MOCT_LINK.shp"), encoding="cp949").to_crs(epsg=5179)
+    NODE_GDF = gpd.read_file(os.path.join(SHP_DIR, "MOCT_NODE.shp"), encoding="cp949").to_crs(epsg=5179)
+    
+    logger.info(f"config.init_gdf LINK 데이터 로드 완료 (건수: {len(LINK_GDF)})")
+    logger.info(f"config.init_gdf NODE 데이터 로드 완료 (건수: {len(NODE_GDF)})")
+    logger.info("config.init_gdf GIS 인프라 데이터 프리로드 성공!")
 
 async def init_db_connections():
     global ssh_tunnel_redis, ssh_tunnel_neo4j, ssh_tunnel_mysql
