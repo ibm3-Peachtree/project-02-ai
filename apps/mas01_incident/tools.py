@@ -58,7 +58,7 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
         
         dedup_key = f"incident:dedup:{info_hash}"
         
-        ttl_seconds = 0
+        ttl_seconds = None
         end_time_str = incident_data.get("endDateTime") if mode == "redis" else str(incident_data.get("end_datetime"))
         if end_time_str:
             try:
@@ -147,6 +147,16 @@ async def resolve_address_point(address:str) -> Optional[Dict[str, Any]] :
         return {"lat": lat, "lng": lng, "si": si, "gu": gu}
     return None
 
+async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
+    """분석이 완료된 데이터를 서울시 구별 Pub/Sub 채널로 Broadcast"""
+    final_si = si_name if si_name else "서울특별시"
+    final_gu = gu_name if gu_name else "미분류"
+    stream_key = f"incident:stream:{final_si}:{final_gu}"
+    
+    payload_string = json.dumps(enriched_data, ensure_ascii=False)
+    # TTL 계산 없이 우선 로그에 진입 시간 순서대로 찔러 넣기
+    await config.redis_client.xadd(name=stream_key, fields={"payload": payload_string})
+
 # @tool
 # async def get_seoul_roadname_latlng(roadname) :
 #     """
@@ -205,14 +215,3 @@ async def resolve_address_point(address:str) -> Optional[Dict[str, Any]] :
 # mas01_node2_tools = [kakao_address_to_latlng, get_seoul_roadname_latlng]
 
 
-# async def publish_to_gu_channel(gu_name: str, enriched_data: dict):
-#     """분석이 완료된 데이터를 서울시 구별 Pub/Sub 채널로 Broadcast"""
-#     # 채널명 예시: incident:강남구
-#     channel_key = f"incident:{gu_name}"
-    
-#     # 딕셔너리 데이터를 문자열(JSON)로 변환
-#     payload_string = json.dumps(enriched_data, ensure_ascii=False)
-    
-#     # 채널에 가입(Subscribe)한 모든 리스너에게 동시에 데이터가 뿌려집니다.
-#     await config.redis_client.publish(channel_key, payload_string)
-#     print(f"📡 [Dispatcher] 채널 '{channel_key}'로 실시간 데이터 전파 완료!")

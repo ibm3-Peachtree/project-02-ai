@@ -154,7 +154,7 @@ async def mysql_topis_listener() :
                     logger.info("[Stream Worker : MySQL] : Node 처리 완료")
                     
                     for node in processed_nodes : 
-                        logger.info(f"   📍 장소: {node['affected']} | 좌표: ({node['lat']}, {node['lng']}) | 기간: {node['startDateTime']} ~ {node['endDateTime']}")
+                        logger.info(f"장소: {node['affected']} | 좌표: ({node['lat']}, {node['lng']}) | 기간: {node['startDateTime']} ~ {node['endDateTime']}")
                         # 다음 행동 등 하기
 
             await asyncio.sleep(3600)
@@ -166,5 +166,76 @@ async def mysql_topis_listener() :
             logger.error(f"[MAS01 Worker 2 Error] 에러 발생: {e}")
             await asyncio.sleep(5)  # 에러 발생 시 일시적인 부하 분산을 위해 대기 후 리트라이
             
+async def redis_stream_end_time_cleaner():
+    """
+    [Background DB Cleaner]
+    5분마다 돌면서 endDateTime이 지난 만료된 대중교통 통제 데이터를 추적
+    만료 데이터 발견 시:
+      1. Neo4j 그래프 DB에서 해당 Incident 노드 및 AFFECTED_BY 간선 일괄 삭제 (DETACH DELETE)
+      2. Redis Stream에서 해당 메시지 영구 삭제 (XDEL)
+    """
+    redis_client = config.redis_client
+    
+    # 특정 ID DETACH DELETE를 수행하면 물려있던 가상 플랫폼간의 :AFFECTED_BY 관계도 자동 삭제됩니다.
+    neo4j_purge_cypher = """
+        MATCH (i:Incident {id: $incident_id})
+        DETACH DELETE i
+    """
+    
+    while True:
+        try:
+            # 5분마다 관제 청소기 가동
+            await asyncio.sleep(300)
             
+            # 현재 시간 타임스탬프 밀리초 구하기
+            current_ts_ms = int(datetime.now().timestamp() * 1000)
+            
+            for gu in SEOUL_GUS:
+                stream_key = f"incident:stream:서울특별시:{gu}"
+                
+                # 현재 시점 이전에 쌓인 과거 스트림 메시지만 효율적으로 범위 검색 (XRANGE)
+                expired_messages = await redis_client.xrange(stream_key, min="-", max=str(current_ts_ms))
+                
+                if not expired_messages:
+                    continue
+                    
+                for message_id, payload in expired_messages:
+                    raw_json = payload.get(b"payload").decode('utf-8')
+                    data = json.loads(raw_json)
+                    
+                    # 내부 endDateTime 문자열 정밀 파싱
+                    end_str = data.get("endDateTime", "").replace("T", " ")
+                    end_dt = datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S")
+                    
+                    # [만료 판정선 규칙] 현재 시간보다 종료 예정 시간이 과거인 경우
+                    if end_dt < datetime.now():
+                        target_incident_id = data.get("incident_id")
+                        affected_place = data.get("affected", "알 수 없는 장소")
+                        
+                        # [STEP 1] Neo4j 그래프 데이터베이스 동기화 청소
+                        if target_incident_id:
+                            try:
+                                async with config.neo4j_client.session() as session:
+                                    result = await session.run(neo4j_purge_cypher, incident_id=target_incident_id)
+                                    summary = await result.consume()
+                                    
+                                    logger.info(
+                                        f"[MAS01 Worker3 Neo4j Auto-Purge] 시간 만료로 인한 그래프 청소 완료 "
+                                        f"(장소: {affected_place} | 삭제된 노드: {summary.counters.nodes_deleted}개)"
+                                    )
+                            except Exception as ne:
+                                logger.error(f"[MAS01 Worker3 Neo4j Auto-Purge Error] '{affected_place}' 노드 제거 실패: {ne}")
+                                # Neo4j 삭제 실패 시 데이터 무결성을 위해 Redis 삭제를 건너뛰고 다음 턴에 재시도
+                                continue 
+                        
+                        # [STEP 2] Redis Stream 큐 메모리 관리 청소
+                        await redis_client.xdel(stream_key, message_id)
+                        logger.info(f"[MAS01 Worker3 Redis Stream Cleaner] 스트림 메시지 XDEL 완료 (MsgID: {message_id})")
+                        
+        except asyncio.CancelledError:
+            logger.info("[MAS01 Worker3 Background DB Cleaner] 서버 종료로 인해 청소 태스크를 종료합니다.")
+            break
+        except Exception as e:
+            logger.error(f"[MAS01 Worker3 Background DB Cleaner Total Error] 스케줄러 실행 중 예외 발생: {e}")
+            await asyncio.sleep(10) # 에러 폭사 방지용 휴식            
     

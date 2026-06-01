@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import init_db_connections, close_db_connections, init_gdf, logger
 import config
 from routers.mas01_router import mas01_router
-from apps.mas01_incident.workers import redis_topis_listener, mysql_topis_listener
+from apps.mas01_incident.workers import redis_topis_listener, mysql_topis_listener, redis_stream_end_time_cleaner
 # from apps.mas2_router.workers import router_stream_listener # 추후 확장 시 주석 해제
 
 def handle_worker_result(task: asyncio.Task):
@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
     # MAS1 워커 가동 (Redis Stream 구독 시작)
     mas01_task1 = asyncio.create_task(redis_topis_listener())
     mas01_task2 = asyncio.create_task(mysql_topis_listener())
+    cleaner_task = asyncio.create_task(redis_stream_end_time_cleaner())
     
     mas01_task1.add_done_callback(handle_worker_result)
     mas01_task2.add_done_callback(handle_worker_result)
@@ -39,6 +40,24 @@ async def lifespan(app: FastAPI):
     
     yield
     
+    logger.info("🧹 [System] 테스트용 임시 Incident 노드 및 AFFECTED_BY 관계 일괄 청소 시작...")
+    try:
+        # DETACH DELETE로 Incident 노드와 이에 물린 모든 r:AFFECTED_BY 관계를 한 번에 박멸합니다.
+        cleanup_cypher = """
+        MATCH (i:Incident)
+        DETACH DELETE i
+        """
+        async with config.neo4j_client.session() as session:
+            result = await session.run(cleanup_cypher)
+            # Neo4j 5.x 드라이버 스펙에 맞춘 소비(Consume) 처리로 쿼리 완료 보장
+            summary = await result.consume()
+            nodes_deleted = summary.counters.nodes_deleted
+            relationships_deleted = summary.counters.relationships_deleted
+            
+            logger.info(f"실제 서비스에서 삭제하기[Neo4j Cleanup] 청소 완료 (삭제된 노드: {nodes_deleted}개, 삭제된 관계: {relationships_deleted}개)")
+    except Exception as e:
+        logger.error(f"실제 서비스에서 삭제하기 [Neo4j Cleanup Error] 셧다운 청소 중 예외 발생: {e}")
+    
     logger.info("=== [System] FastAPI 종료 및 DB 연결 해제 ===")
     await close_db_connections()
     
@@ -46,6 +65,7 @@ async def lifespan(app: FastAPI):
     logger.info("=== [System] FastAPI 종료 및 MAS 워커 정지 ===")
     mas01_task1.cancel()
     mas01_task2.cancel()
+    cleaner_task.cancel()
     await asyncio.gather(mas01_task1, mas01_task2, return_exceptions=True)
     
     try:

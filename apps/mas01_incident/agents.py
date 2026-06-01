@@ -1,6 +1,7 @@
 # apps/mas01_incident/agents.py
 from typing import TypedDict, Annotated, Sequence, Dict, List, Any
 import json
+import hashlib
 
 from openai import AsyncOpenAI
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
@@ -10,7 +11,7 @@ import operator
 
 import config
 from config import logger
-from apps.mas01_incident.tools import resolve_address_point, resolve_between_nodes, resolve_linear_reference
+from apps.mas01_incident.tools import resolve_address_point, resolve_between_nodes, resolve_linear_reference, publish_to_channel
 
 # 참고 https://taykim.tistory.com/35
 
@@ -29,6 +30,29 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
     """
     raw_data = state['raw_incident_data']
     logger.info(f"[MAS01 Agent : extract_affected] inputs : {raw_data}")
+    
+    raw_lat = raw_data.get("lat")
+    raw_lng = raw_data.get("lng")
+    
+    if raw_lat and raw_lng:
+        try:
+            val_lat = float(raw_lat)
+            val_lng = float(raw_lng)
+            
+            # 🎯 대한민국 지리 규칙 기반의 자동 스왑 디펜스 코드
+            # 100이 넘는 값(124~132)이 lat(위도)에 들어와 있다면 명백한 오류이므로 자리를 바꿉니다.
+            if val_lat > 100.0 and val_lng < 50.0:
+                logger.warning(f"🔄 [Redis 축 전도 감지] lat과 lng가 뒤바뀌어 들어왔습니다. 강제 교정합니다. (입력 lat: {val_lat}, lng: {val_lng})")
+                raw_data["lat"] = val_lng  # 37.52... 을 위도로
+                raw_data["lng"] = val_lat  # 127.05... 을 경도로
+            else:
+                # 데이터가 정상적으로 들어왔을 때의 포맷팅
+                raw_data["lat"] = val_lat
+                raw_data["lng"] = val_lng
+        except ValueError:
+            pass # 숫자가 아닐 경우의 예외 방어
+            
+    logger.info(f"[MAS01 Agent : extract_affected] 보정 완료된 레디스 데이터 : {raw_data}")
     
     kanana_client = AsyncOpenAI(base_url=config.KANANA_MODEL_02_URL, api_key="fake-key")
     
@@ -56,8 +80,8 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
                     "offset_end" : LINEAR_REFERENCE 유형일 때 종료 거리(정수형, m 단위, 예: 650). 없다면 null,
                     "address" : "ADDRESS_POINT 유형일 때의 주소 정보. 없다면 null"
                 },
-                "lat" : 본문에 직접 명시된 위도 값(float). 명시되어 있지 않다면 반드시 null,
-                "lng" : 본문에 직접 명시된 경도 값(float). 명시되어 있지 않다면 반드시 null,
+                "lat" : 본문에 직접 명시된 위도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 북위 약 33°~38°에 위치,
+                "lng" : 본문에 직접 명시된 경도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 동경 약 126°~131°에 위치,
                 "si" : "본문에 명시되거나 유추 가능한 도시 이름 (예: 서울특별시)",
                 "gu" : "본문에 명시되거나 유추 가능한 지역구 이름 (예: 서초구, 중구 등)",
                 "startDateTime" : "datetime 형식. %Y-%m-%d %H:%M:%S 형태",
@@ -129,7 +153,7 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
     )
 
     result = json.loads(response.choices[0].message.content)
-    
+    logger.info(f"[MAS01 Agent : extract_affected] outputs : {result}")
     return {"extracted_entities" : result}
         
 async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
@@ -144,7 +168,7 @@ async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
     
     for entity in entities:
         item = entity.copy() # 원본 훼손 방지
-        loc_type = item.get("location_type")
+        location_type = item.get("location_type")
         details = item.get("details", {})
         affected_name = item.get("affected")
         
@@ -152,20 +176,20 @@ async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
             coord_result = None
             
             # 1. 분기 라우팅 처리
-            if loc_type == "BETWEEN_NODES":
+            if location_type == "BETWEEN_NODES":
                 coord_result = resolve_between_nodes(
                     road_name=details.get("road_name"),
                     start_node=details.get("start_node"),
                     end_node=details.get("end_node")
                 )
-            elif loc_type == "LINEAR_REFERENCE":
+            elif location_type == "LINEAR_REFERENCE":
                 coord_result = resolve_linear_reference(
                     road_name=details.get("road_name"),
                     anchor_node=details.get("anchor_node"),
                     offset_start=float(details.get("offset_start", 0)),
                     offset_end=float(details.get("offset_end", 0))
                 )
-            elif loc_type == "ADDRESS_POINT":
+            elif location_type == "ADDRESS_POINT":
                 coord_result = resolve_address_point(address=details.get("address"))
                 
             # 2. 좌표 툴 연산 성공 시 결합
@@ -186,21 +210,199 @@ async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
         
     return {"affected_nodes": final_processed_nodes}
 
-async def generate_affected_edge_and_publish_node(state:AgentState) -> List[Dict[str, Any]] :
+async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
     """
-    1. 좌표가 확보된 affected_nodes를 기반으로 Neo4j에 :Incident 노드 생성 및 반경 내 가상 플랫폼 연결 (:AFFECTED_BY)
-    2. 연산이 완료된 객체를 서울시 구(gu)별 Redis 채널로 실시간 Broadcast(Publish)
+    좌표가 확보된 affected_nodes를 기반으로 Neo4j에 :Incident 노드 생성 및 
+    반경 500m 내 가상 플랫폼 노드(is_master=false)를 찾아 :AFFECTED_BY 관계로 매핑합니다.
     """
-    pass
+    nodes = state.get("affected_nodes", [])
+    logger.info(f"[MAS01 Agent :  apply_to_neo4j_graph_node] {len(nodes)}개의 인프라 객체 그래프 DB 반영 시작...")
+    
+    # ADDRESS_POINT, BETWEEN_NODES, LINEAR_REFERENCE
+    cypher_query01 = """
+        MERGE (i:Incident {id: $incident_id})
+        ON CREATE SET 
+            i.content = $content,
+            i.location_type = $location_type,
+            i.start_time = datetime(replace($start_time, " ", "T")),
+            i.end_time = datetime(replace($end_time, " ", "T"))
+        WITH i
+        
+        MATCH (s:Station {is_master: false})
+        WHERE point.distance(s.location, point({srid: 4326, x: $lng, y: $lat})) <= 200
+        MERGE (s)-[r:AFFECTED_BY]->(i)
+        RETURN count(r) as connected_count
+    """
+    
+    cypher_query02 = """
+        MERGE (i:Incident {id: $incident_id})
+        ON CREATE SET 
+            i.content = $content,
+            i.location_type = $location_type,
+            i.start_time = datetime(replace($start_time, " ", "T")),
+            i.end_time = datetime(replace($end_time, " ", "T"))
+        WITH i
+        // Station 중 대문자 "BUS" 타입이면서, 에이전트가 완벽히 쪼개놓은 5자리 ars_id를 정확히 매칭
+        MATCH (s:Station {type: "BUS", ars_id: $ars_id, is_master: false})
+        MERGE (s)-[r:AFFECTED_BY]->(i)
+        RETURN count(r) as connected_count
+    """
+    
+    cypher_query03 = """
+        MERGE (i:Incident {id: $incident_id})
+        ON CREATE SET 
+            i.content = $content,
+            i.location_type = $location_type,
+            i.start_time = datetime(replace($start_time, " ", "T")),
+            i.end_time = datetime(replace($end_time, " ", "T"))
+        WITH i
+
+        // 🎯 1. 해당 호선의 시작 역과 종료 역의 '가상 플랫폼 노드(is_master=false)'를 먼저 매칭
+        MATCH (start_st:Station {is_master: false})
+        WHERE start_st.line_name = $line_name AND start_st.station_name = $start_node
+
+        MATCH (end_st:Station {is_master: false})
+        WHERE end_st.line_name = $line_name AND end_st.station_name = $end_node
+
+        // 2. 두 가상 플랫폼 승승장 사이의 물리적 주행선(*:NEXT_STOP) 경로 추적
+        MATCH path = shortestPath((start_st)-[:NEXT_STOP*..30]->(end_st))
+        WITH i, nodes(path) as affected_platforms
+
+        // 3. 경로 상에 존재하는 가상 플랫폼 노드들에만 페널티 간선(:AFFECTED_BY) 한방에 주입
+        UNWIND affected_platforms as s
+        MERGE (s)-[r:AFFECTED_BY]->(i)
+        RETURN count(r) as connected_count
+    """
+    
+    cypher_query04 = """
+        MERGE (i:Incident {id: $incident_id})
+        ON CREATE SET 
+            i.content = $content,
+            i.location_type = $location_type,
+            i.start_time = datetime(replace($start_time, " ", "T")),
+            i.end_time = datetime(replace($end_time, " ", "T"))
+        WITH i
+        // 해당 호선에서 단 한 곳의 가상 플랫폼 승강장만 찾아 정확히 연결
+        MATCH (s:Station {is_master: false})
+        WHERE s.line_name = $line_name AND s.station_name = $start_node
+        MERGE (s)-[r:AFFECTED_BY]->(i)
+        RETURN count(r) as connected_count
+    """
+    
+    
+    
+    success_nodes = []
+    
+    for node in nodes :
+        item = node.copy()
+        lat = item.get("lat")
+        lng = item.get("lng")
+        affected = item.get("affected")
+        location_type = item.get("location_type")
+        
+        try:
+            async with config.neo4j_client.session() as session:
+                if location_type == "BUS":
+                    # 버스 번호 찌꺼기 필터링 후 5자리 고유 ID를 기반으로 식별자 해시 생성
+                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_BUS_{affected}".encode('utf-8')).hexdigest()
+                    
+                    result = await session.run(
+                        cypher_query02,
+                        incident_id=incident_id,
+                        content=item.get("content"),
+                        location_type=location_type,
+                        start_time=item.get("startDateTime"),
+                        end_time=item.get("endDateTime"),
+                        ars_id=str(affected).strip() # Neo4j 속성 데이터 정합성을 위해 문자열 포맷팅
+                    )
+
+                elif location_type == "SUBWAY" :
+                    details = item.get("details")
+                    start_st = details.get("start_node")  # 예: "서울역"
+                    end_st = details.get("end_node")
+                    
+                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_{item.get("affected")}_{start_st}_{end_st}".encode('utf-8')).hexdigest()
+                    
+                    if start_st == end_st:
+                        result = await session.run(
+                                    cypher_query04,
+                                    incident_id=incident_id,
+                                    content=item.get("content"),
+                                    location_type=location_type,
+                                    start_time=item.get("startDateTime"),
+                                    end_time=item.get("endDateTime"),
+                                    line_name=str(item.get("affected")).strip(),
+                                    start_node=str(start_st).strip(),
+                                    end_node=str(end_st).strip()
+                                )
+                    else : 
+                        result = await session.run(
+                                    cypher_query03,
+                                    incident_id=incident_id,
+                                    content=item.get("content"),
+                                    location_type=location_type,
+                                    start_time=item.get("startDateTime"),
+                                    end_time=item.get("endDateTime"),
+                                    line_name=str(item.get("affected")).strip(),
+                                    start_node=str(start_st).strip(),
+                                    end_node=str(end_st).strip()
+                                )
+                    
+                    
+                else :
+                    if lat is None or lng is None:
+                        logger.warning(f"[MAS01 Agent :  apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재(null)로 인해 GraphDB 매핑을 건너뜁니다.")
+                        continue
+                    
+                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_{lat}_{lng}".encode('utf-8')).hexdigest()
+                    result = await session.run(
+                        cypher_query01,
+                        incident_id=incident_id,
+                        content=item.get("content"),
+                        location_type=item.get("location_type"),
+                        start_time=item.get("startDateTime"),
+                        end_time=item.get("endDateTime"),
+                        lat=float(lat),
+                        lng=float(lng)
+                    )
+                    
+                    # 쿼리 결과로부터 몇 개의 가상 플랫폼 노드가 통제 페널티 사정권에 들어왔는지 카운트 확인
+                    record = await result.single()
+                    connected_count = record["connected_count"] if record else 0
+                    
+                    # 생성된 고유 incident_id를 아이템 컨텍스트에 주입 (사후 Redis 배포 및 추적용)
+                    item["incident_id"] = incident_id
+                    success_nodes.append(item)
+                    
+                    logger.info(f"[MAS01 Agent :  apply_to_neo4j_graph_node] : [Neo4j 매핑 성공] [{item.get('affected')}] Incident 노드 생성 및 가상 플랫폼 {connected_count}개소 연계 완료")
+                    
+        except Exception as e:
+            logger.error(f"[MAS01 Agent :  apply_to_neo4j_graph_node] : [Neo4j Error] '{item.get('affected')}' 처리 중 GraphDB 세션 오류 발생: {e}")
+            continue
+    
+    return {"affected_nodes": success_nodes}
+
+async def publish_incident_event_node(state:AgentState) -> List[Dict[str, Any]] :
+    nodes = state.get("affected_nodes", [])
+    
+    for node in nodes:
+        gu_name = node.get("gu")
+        si_name = node.get("si")
+        if gu_name:
+            await publish_to_channel(gu_name, si_name, node)
+    return state
     
 
 mas01_workflow = StateGraph(AgentState)
 
 mas01_workflow.add_node('extract_affected_node', extract_affected_node)
 mas01_workflow.add_node('enrich_coordinates_node', enrich_coordinates_node)
+mas01_workflow.add_node('apply_to_neo4j_graph_node', apply_to_neo4j_graph_node)
 
 mas01_workflow.set_entry_point('extract_affected_node')
 mas01_workflow.add_edge('extract_affected_node', 'enrich_coordinates_node')
-mas01_workflow.add_edge('enrich_coordinates_node', END)
+mas01_workflow.add_edge('enrich_coordinates_node', 'apply_to_neo4j_graph_node')
+# mas01_workflow.add_edge('enrich_coordinates_node', END)
+mas01_workflow.add_edge('apply_to_neo4j_graph_node', END)
 
 mas01_agent = mas01_workflow.compile()
