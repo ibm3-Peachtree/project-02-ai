@@ -7,7 +7,7 @@ from config import init_db_connections, close_db_connections, init_gdf, logger
 import config
 from routers.mas01_router import mas01_router
 from apps.mas01_incident.workers import redis_topis_listener, mysql_topis_listener, redis_stream_end_time_cleaner
-# from apps.mas2_router.workers import router_stream_listener # 추후 확장 시 주석 해제
+from apps.mas02_reroute.workers import redis_incident_consumer_and_rerouter
 
 def handle_worker_result(task: asyncio.Task):
     """백그라운드 태스크가 도중에 종료되었을 때 예외를 캐치하는 콜백 함수"""
@@ -26,20 +26,6 @@ async def lifespan(app: FastAPI):
     await init_db_connections()
     # await init_gdf()
     
-    logger.info("=== [System] FastAPI 시작 및 MAS 워커 가동 ===")
-    # MAS1 워커 가동 (Redis Stream 구독 시작)
-    mas01_task1 = asyncio.create_task(redis_topis_listener())
-    mas01_task2 = asyncio.create_task(mysql_topis_listener())
-    cleaner_task = asyncio.create_task(redis_stream_end_time_cleaner())
-    
-    mas01_task1.add_done_callback(handle_worker_result)
-    mas01_task2.add_done_callback(handle_worker_result)
-    
-    # 만약 MAS2가 추가된다면 아래처럼 타스크만 추가해주면 레이어가 분리됩니다.
-    # mas2_task = asyncio.create_task(router_stream_listener())
-    
-    yield
-    
     logger.info("🧹 [System] 테스트용 임시 Incident 노드 및 AFFECTED_BY 관계 일괄 청소 시작...")
     try:
         # DETACH DELETE로 Incident 노드와 이에 물린 모든 r:AFFECTED_BY 관계를 한 번에 박멸합니다.
@@ -57,6 +43,23 @@ async def lifespan(app: FastAPI):
             logger.info(f"실제 서비스에서 삭제하기[Neo4j Cleanup] 청소 완료 (삭제된 노드: {nodes_deleted}개, 삭제된 관계: {relationships_deleted}개)")
     except Exception as e:
         logger.error(f"실제 서비스에서 삭제하기 [Neo4j Cleanup Error] 셧다운 청소 중 예외 발생: {e}")
+        
+    
+    logger.info("=== [System] FastAPI 시작 및 MAS 워커 가동 ===")
+    # MAS1 워커 가동 (Redis Stream 구독 시작)
+    mas01_task1 = asyncio.create_task(redis_topis_listener())
+    mas01_task2 = asyncio.create_task(mysql_topis_listener())
+    mas02_reroute_task = asyncio.create_task(redis_incident_consumer_and_rerouter())
+    cleaner_task = asyncio.create_task(redis_stream_end_time_cleaner())
+    
+    mas01_task1.add_done_callback(handle_worker_result)
+    mas01_task2.add_done_callback(handle_worker_result)
+    mas02_reroute_task.add_done_callback(handle_worker_result)
+    
+    # 만약 MAS2가 추가된다면 아래처럼 타스크만 추가해주면 레이어가 분리됩니다.
+    # mas2_task = asyncio.create_task(router_stream_listener())
+    
+    yield
     
     logger.info("=== [System] FastAPI 종료 및 DB 연결 해제 ===")
     await close_db_connections()
@@ -65,12 +68,20 @@ async def lifespan(app: FastAPI):
     logger.info("=== [System] FastAPI 종료 및 MAS 워커 정지 ===")
     mas01_task1.cancel()
     mas01_task2.cancel()
+    mas02_reroute_task.cancel()
     cleaner_task.cancel()
-    await asyncio.gather(mas01_task1, mas01_task2, return_exceptions=True)
+    await asyncio.gather(
+        mas01_task1, 
+        mas01_task2, 
+        cleaner_task, 
+        mas02_reroute_task,
+        return_exceptions=True
+    )
     
     try:
         await mas01_task1
         await mas01_task2
+        await mas02_reroute_task
         
     except asyncio.CancelledError:
         pass
@@ -103,7 +114,7 @@ app.include_router(mas01_router, prefix=config.API_PREFIX)
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "active_systems": ["MAS1"]}
+    return {"status": "healthy", "active_systems": ["MAS1", "MAS2_Rerouter"]}
 
 if __name__ == "__main__" :
     import uvicorn

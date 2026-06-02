@@ -210,15 +210,10 @@ async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
         
     return {"affected_nodes": final_processed_nodes}
 
-async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
-    """
-    좌표가 확보된 affected_nodes를 기반으로 Neo4j에 :Incident 노드 생성 및 
-    반경 500m 내 가상 플랫폼 노드(is_master=false)를 찾아 :AFFECTED_BY 관계로 매핑합니다.
-    """
+async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
     nodes = state.get("affected_nodes", [])
-    logger.info(f"[MAS01 Agent :  apply_to_neo4j_graph_node] {len(nodes)}개의 인프라 객체 그래프 DB 반영 시작...")
+    logger.info(f"[MAS01 Agent : apply_to_neo4j_graph_node] {len(nodes)}개의 인프라 객체 그래프 DB 반영 시작...")
     
-    # ADDRESS_POINT, BETWEEN_NODES, LINEAR_REFERENCE
     cypher_query01 = """
         MERGE (i:Incident {id: $incident_id})
         ON CREATE SET 
@@ -227,8 +222,7 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
             i.start_time = datetime(replace($start_time, " ", "T")),
             i.end_time = datetime(replace($end_time, " ", "T"))
         WITH i
-        
-        MATCH (s:Station {is_master: false})
+        MATCH (s:Station {is_master: false, type: "BUS"})
         WHERE point.distance(s.location, point({srid: 4326, x: $lng, y: $lat})) <= 200
         MERGE (s)-[r:AFFECTED_BY]->(i)
         RETURN count(r) as connected_count
@@ -242,7 +236,6 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
             i.start_time = datetime(replace($start_time, " ", "T")),
             i.end_time = datetime(replace($end_time, " ", "T"))
         WITH i
-        // Station 중 대문자 "BUS" 타입이면서, 에이전트가 완벽히 쪼개놓은 5자리 ars_id를 정확히 매칭
         MATCH (s:Station {type: "BUS", ars_id: $ars_id, is_master: false})
         MERGE (s)-[r:AFFECTED_BY]->(i)
         RETURN count(r) as connected_count
@@ -256,19 +249,12 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
             i.start_time = datetime(replace($start_time, " ", "T")),
             i.end_time = datetime(replace($end_time, " ", "T"))
         WITH i
-
-        // 🎯 1. 해당 호선의 시작 역과 종료 역의 '가상 플랫폼 노드(is_master=false)'를 먼저 매칭
         MATCH (start_st:Station {is_master: false})
         WHERE start_st.line_name = $line_name AND start_st.station_name = $start_node
-
         MATCH (end_st:Station {is_master: false})
         WHERE end_st.line_name = $line_name AND end_st.station_name = $end_node
-
-        // 2. 두 가상 플랫폼 승승장 사이의 물리적 주행선(*:NEXT_STOP) 경로 추적
         MATCH path = shortestPath((start_st)-[:NEXT_STOP*..30]->(end_st))
         WITH i, nodes(path) as affected_platforms
-
-        // 3. 경로 상에 존재하는 가상 플랫폼 노드들에만 페널티 간선(:AFFECTED_BY) 한방에 주입
         UNWIND affected_platforms as s
         MERGE (s)-[r:AFFECTED_BY]->(i)
         RETURN count(r) as connected_count
@@ -282,17 +268,15 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
             i.start_time = datetime(replace($start_time, " ", "T")),
             i.end_time = datetime(replace($end_time, " ", "T"))
         WITH i
-        // 해당 호선에서 단 한 곳의 가상 플랫폼 승강장만 찾아 정확히 연결
         MATCH (s:Station {is_master: false})
         WHERE s.line_name = $line_name AND s.station_name = $start_node
         MERGE (s)-[r:AFFECTED_BY]->(i)
         RETURN count(r) as connected_count
     """
     
-    
-    
     success_nodes = []
     
+    # 🔁 1단계: 모든 엔터티 루프를 돌며 Neo4j 세션 단독 실행 및 완전 밀봉
     for node in nodes :
         item = node.copy()
         lat = item.get("lat")
@@ -303,9 +287,7 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
         try:
             async with config.neo4j_client.session() as session:
                 if location_type == "BUS":
-                    # 버스 번호 찌꺼기 필터링 후 5자리 고유 ID를 기반으로 식별자 해시 생성
                     incident_id = hashlib.md5(f"{item.get('startDateTime')}_BUS_{affected}".encode('utf-8')).hexdigest()
-                    
                     result = await session.run(
                         cypher_query02,
                         incident_id=incident_id,
@@ -313,84 +295,48 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> List[Dict[str, Any]] :
                         location_type=location_type,
                         start_time=item.get("startDateTime"),
                         end_time=item.get("endDateTime"),
-                        ars_id=str(affected).strip() # Neo4j 속성 데이터 정합성을 위해 문자열 포맷팅
+                        ars_id=str(affected).strip()
                     )
-
                 elif location_type == "SUBWAY" :
                     details = item.get("details")
-                    start_st = details.get("start_node")  # 예: "서울역"
-                    end_st = details.get("end_node")
-                    
-                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_{item.get("affected")}_{start_st}_{end_st}".encode('utf-8')).hexdigest()
+                    start_st = details.get("start_node").replace("역", "")  
+                    end_st = details.get("end_node").replace("역", "")
+                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_{item.get('affected')}_{start_st}_{end_st}".encode('utf-8')).hexdigest()
                     
                     if start_st == end_st:
-                        result = await session.run(
-                                    cypher_query04,
-                                    incident_id=incident_id,
-                                    content=item.get("content"),
-                                    location_type=location_type,
-                                    start_time=item.get("startDateTime"),
-                                    end_time=item.get("endDateTime"),
-                                    line_name=str(item.get("affected")).strip(),
-                                    start_node=str(start_st).strip(),
-                                    end_node=str(end_st).strip()
-                                )
+                        result = await session.run(cypher_query04, incident_id=incident_id, content=item.get("content"), location_type=location_type, start_time=item.get("startDateTime"), end_time=item.get("endDateTime"), line_name=str(item.get("affected")).strip(), start_node=str(start_st).strip(), end_node=str(end_st).strip())
                     else : 
-                        result = await session.run(
-                                    cypher_query03,
-                                    incident_id=incident_id,
-                                    content=item.get("content"),
-                                    location_type=location_type,
-                                    start_time=item.get("startDateTime"),
-                                    end_time=item.get("endDateTime"),
-                                    line_name=str(item.get("affected")).strip(),
-                                    start_node=str(start_st).strip(),
-                                    end_node=str(end_st).strip()
-                                )
-                    
-                    
+                        result = await session.run(cypher_query03, incident_id=incident_id, content=item.get("content"), location_type=location_type, start_time=item.get("startDateTime"), end_time=item.get("endDateTime"), line_name=str(item.get("affected")).strip(), start_node=str(start_st).strip(), end_node=str(end_st).strip())
                 else :
                     if lat is None or lng is None:
-                        logger.warning(f"[MAS01 Agent :  apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재(null)로 인해 GraphDB 매핑을 건너뜁니다.")
+                        logger.warning(f"[MAS01 Agent apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재로 패스.")
                         continue
                     
                     incident_id = hashlib.md5(f"{item.get('startDateTime')}_{lat}_{lng}".encode('utf-8')).hexdigest()
-                    result = await session.run(
-                        cypher_query01,
-                        incident_id=incident_id,
-                        content=item.get("content"),
-                        location_type=item.get("location_type"),
-                        start_time=item.get("startDateTime"),
-                        end_time=item.get("endDateTime"),
-                        lat=float(lat),
-                        lng=float(lng)
-                    )
+                    result = await session.run(cypher_query01, incident_id=incident_id, content=item.get("content"), location_type=item.get("location_type"), start_time=item.get("startDateTime"), end_time=item.get("endDateTime"), lat=float(lat), lng=float(lng))
                     
-                    # 쿼리 결과로부터 몇 개의 가상 플랫폼 노드가 통제 페널티 사정권에 들어왔는지 카운트 확인
-                    record = await result.single()
-                    connected_count = record["connected_count"] if record else 0
-                    
-                    # 생성된 고유 incident_id를 아이템 컨텍스트에 주입 (사후 Redis 배포 및 추적용)
-                    item["incident_id"] = incident_id
-                    success_nodes.append(item)
-                    
-                    logger.info(f"[MAS01 Agent :  apply_to_neo4j_graph_node] : [Neo4j 매핑 성공] [{item.get('affected')}] Incident 노드 생성 및 가상 플랫폼 {connected_count}개소 연계 완료")
-                    
+                # 🎯 [핵심 보정 1] 분기별 무관하게 result.single()을 소모하여 그래프 트랜잭션 동기화 및 강제 빌드 유도
+                record = await result.single()
+                connected_count = record["connected_count"] if record else 0
+                
+                item["incident_id"] = incident_id
+                success_nodes.append(item)
+                logger.info(f"[MAS01 Agent apply_to_neo4j_graph_node][Neo4j 동기화 완료] [{item.get('affected')}] 관계선 {connected_count}개소 융합 완료.")
+                
         except Exception as e:
-            logger.error(f"[MAS01 Agent :  apply_to_neo4j_graph_node] : [Neo4j Error] '{item.get('affected')}' 처리 중 GraphDB 세션 오류 발생: {e}")
+            logger.error(f"[MAS01 apply_to_neo4j_graph_node ] [Neo4j 세션 오류] '{item.get('affected')}' 처리 실패: {e}")
             continue
-    
-    return {"affected_nodes": success_nodes}
-
-async def publish_incident_event_node(state:AgentState) -> List[Dict[str, Any]] :
-    nodes = state.get("affected_nodes", [])
-    
-    for node in nodes:
-        gu_name = node.get("gu")
-        si_name = node.get("si")
+            
+    # 🎯 [핵심 보정 2] 루프가 완전히 종료(Neo4j DB 영구커밋 완료)된 안전 구역에서만 Redis 발행 기동!!
+    logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Neo4j] 모든 인프라 노드 완벽 저장 성공. 최종 채널 전파를 시작합니다 (총 {len(success_nodes)}건)")
+    for s_node in success_nodes:
+        gu_name = s_node.get("gu")
+        si_name = s_node.get("si")
         if gu_name:
-            await publish_to_channel(gu_name, si_name, node)
-    return state
+            await publish_to_channel(gu_name, si_name, s_node)
+            logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Redis] DB 무결성을 확인한 후 안전하게 [{gu_name}] 스트림 발행 성공!")
+            
+    return {"affected_nodes": success_nodes}
     
 
 mas01_workflow = StateGraph(AgentState)

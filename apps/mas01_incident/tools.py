@@ -149,13 +149,38 @@ async def resolve_address_point(address:str) -> Optional[Dict[str, Any]] :
 
 async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
     """분석이 완료된 데이터를 서울시 구별 Pub/Sub 채널로 Broadcast"""
-    final_si = si_name if si_name else "서울특별시"
+    final_si = "서울특별시" if "서울" in si_name else si_name
     final_gu = gu_name if gu_name else "미분류"
+    if final_gu[-1] != '구' :
+        final_gu += '구'
     stream_key = f"incident:stream:{final_si}:{final_gu}"
     
-    payload_string = json.dumps(enriched_data, ensure_ascii=False)
-    # TTL 계산 없이 우선 로그에 진입 시간 순서대로 찔러 넣기
-    await config.redis_client.xadd(name=stream_key, fields={"payload": payload_string})
+    details_data = enriched_data.get("details", {}) or {}
+    
+    flat_data = {
+        "incident_id": str(enriched_data.get("incident_id", "")),
+        "affected": str(enriched_data.get("affected", "")),
+        "location_type": str(enriched_data.get("location_type", "")),
+        "lat": str(enriched_data.get("lat", "")),
+        "lng": str(enriched_data.get("lng", "")),
+        "si": final_si,
+        "gu": final_gu,
+        "startDateTime": str(enriched_data.get("startDateTime", "")),
+        "endDateTime": str(enriched_data.get("endDateTime", "")),
+        "content": str(enriched_data.get("content", "")),
+        
+        # details 내부의 값들을 1차원으로 꺼내서 배치
+        "road_name": str(details_data.get("road_name", "")),
+        "start_node": str(details_data.get("start_node", "")),
+        "end_node": str(details_data.get("end_node", "")),
+        "anchor_node": str(details_data.get("anchor_node", "")),
+        "offset_start": str(details_data.get("offset_start", "")),
+        "offset_end": str(details_data.get("offset_end", "")),
+        "address": str(details_data.get("address", ""))
+    }
+    
+    logger.info(f"[MAS01 Tools.py] {stream_key} 스트림 발행 : {flat_data['affected']} {flat_data['content']}")
+    await config.redis_client.xadd(name=stream_key, fields=flat_data)
 
 # @tool
 # async def get_seoul_roadname_latlng(roadname) :

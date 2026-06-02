@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import aiomysql
 
 import config
@@ -33,11 +34,12 @@ async def redis_topis_listener() :
         try :
             # 1. 현재 날짜를 기반으로 오늘 생성되어야 할 구별 스트림 키 목록 정의
             # 형식 예시: incident:서울특별시:강남구:20260526:stream
-            # today_str = datetime.now().strftime("%Y%m%d")
-            today_str = "20260520"
+            kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
+            today_str = kst_now.strftime("%Y%m%d")
+            # today_str = "20260520"
             stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
             
-            # 테스트용 (실제에선 지우기)
+            # ####################### 테스트용 (실제에선 지우기) #############################
             logger.info("♻️ [MAS01 Worker 1] 테스트를 위해 컨슈머 그룹 초기화를 시작합니다...")
             for stream_key in stream_keys:
                 # 1. 기존에 남아있던 그룹이 있다면 완전 삭제
@@ -127,9 +129,11 @@ async def mysql_topis_listener() :
     
     while True :
         try :
-            # current_time = datetime.now()
+            kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
+            current_time = kst_now.strftime("%Y-%m-%d %H:%M:%S")
             date_format = "%Y-%m-%d %H:%M:%S"
-            current_time = datetime.strptime("2026-05-20 13:00:00", date_format)
+            # current_time = datetime.strptime("2026-05-20 13:00:00", date_format)
+            # current_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
             
             sql = """
                 SELECT * FROM topis_notice 
@@ -188,7 +192,8 @@ async def redis_stream_end_time_cleaner():
             await asyncio.sleep(300)
             
             # 현재 시간 타임스탬프 밀리초 구하기
-            current_ts_ms = int(datetime.now().timestamp() * 1000)
+            kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
+            current_ts_ms = int(kst_now.timestamp() * 1000)
             
             for gu in SEOUL_GUS:
                 stream_key = f"incident:stream:서울특별시:{gu}"
@@ -208,7 +213,7 @@ async def redis_stream_end_time_cleaner():
                     end_dt = datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S")
                     
                     # [만료 판정선 규칙] 현재 시간보다 종료 예정 시간이 과거인 경우
-                    if end_dt < datetime.now():
+                    if end_dt < datetime.now(ZoneInfo("Asia/Seoul")):
                         target_incident_id = data.get("incident_id")
                         affected_place = data.get("affected", "알 수 없는 장소")
                         
