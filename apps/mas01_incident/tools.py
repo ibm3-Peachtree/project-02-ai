@@ -77,6 +77,7 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
             ex=ttl_seconds,
             nx=True
         )
+        logger.info(f"[MAS01 tools.py check_duplicate] redis에 dedup 생성")
         return bool(is_new)
     except Exception as e:
         logger.error(f"[Check Duplicate Error] 예외 발생: {e}")

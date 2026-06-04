@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import init_db_connections, close_db_connections, init_gdf, logger
 import config
-from routers.mas01_router import mas01_router
+from routers.router import router
 from apps.mas01_incident.workers import redis_topis_listener, mysql_topis_listener, redis_stream_end_time_cleaner
 from apps.mas02_reroute.workers import redis_incident_consumer_and_rerouter
 
@@ -110,7 +110,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(mas01_router, prefix=config.API_PREFIX)
+app.include_router(router, prefix=config.API_PREFIX)
 
 @app.get("/health")
 def health_check():
@@ -118,4 +118,4 @@ def health_check():
 
 if __name__ == "__main__" :
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)

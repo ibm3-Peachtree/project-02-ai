@@ -119,8 +119,6 @@ async def redis_incident_consumer_and_rerouter():
                     current_gu = stream_key.split(":")[-1]
                     
                     for message_id, payload in messages:
-                        # payload = payload.get("payload")
-                        # payload = json.loads(payload)
                         incident_id = payload['incident_id']
                         
                         # A. Neo4j에서 이번 사고로 묶인 물리 마스터 노드들의 좌표 배열 획득
@@ -128,7 +126,7 @@ async def redis_incident_consumer_and_rerouter():
                         
                         if affected_coords:
                             # B. Redis XY 데이터를 열어 좌표가 일치하는 유저 ID(recoId) 추출
-                            affected_user_ids = await get_active_users_by_coordinates(affected_coords)
+                            affected_user_ids = await get_active_users_by_coordinates(affected_coords, incident_id)
                             
                             if affected_user_ids:
                                 logger.info(f"[MAS02 worekrs.py redis_incident_consumer_and_rerouter] [우회 기동] 통제 좌표 영향권 유저 리스트: {affected_user_ids}")
@@ -145,7 +143,30 @@ async def redis_incident_consumer_and_rerouter():
                         # ACK 처리 상동
                         await config.redis_client.xack(stream_key, GROUP_NAME, message_id)
                         logger.info(f"[MAS02 workers.py redis_incident_consumer_and_rerouter][ACK] 사건 {incident_id} 우회 전파 프로세스 완료 확정.")
-
+            else :
+                # Redis Stream 키들 안에 여전히 지워지지 않고 살아있는(TTL이 남은) 과거 사고 메시지들을 전수 조사
+                for stream_key in stream_keys:
+                    # XRANGE로 해당 스트림에 현재 쌓여있는 모든 메시지를 긁어옵니다.
+                    active_messages = await redis_client.xrange(stream_key, min="-", max="+")
+                    
+                    if not active_messages:
+                        continue
+                        
+                    for message_id, payload in active_messages:
+                        # 💡 평탄화 구조이므로 바로 꺼냅니다.
+                        incident_id = payload.get("incident_id")
+                        
+                        if incident_id:
+                            # 10초 전에 났던 사고라도, 아직 살아있으므로(TTL 작동 중) 10초마다 순찰 돌기
+                            logger.info(f"[MAS02 workers.py redis_incident_consumer_and_rerouter][10초 주기 순찰관제] 진행 중인 사고 관제선 유지 중: {incident_id}")
+                            
+                            affected_coords = await get_affected_coordinates_from_neo4j(incident_id)
+                            if affected_coords:
+                                # 🎯 바로 이 타이밍에 10초 사이에 새로 진입한 유저 B가 그물망에 걸려듭니다!
+                                affected_user_ids = await get_active_users_by_coordinates(affected_coords, incident_id)
+                                if affected_user_ids:
+                                    logger.warning(f"[MAS02 workers.py redis_incident_consumer_and_rerouter][순찰 저격 성공] 통제 도중 중간 난입한 유저 포착: {affected_user_ids}")
+                                    # (유저 B용 실시간 우회 경로 루트 생성 및 Spring Boot 발송 지점)
             # CPU 과열 방지용 미세 휴식
             await asyncio.sleep(0.1)
 
