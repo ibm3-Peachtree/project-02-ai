@@ -251,9 +251,9 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
             i.end_time = datetime(replace($end_time, " ", "T"))
         WITH i
         MATCH (start_st:Station {is_master: false})
-        WHERE start_st.line_name = $line_name AND start_st.station_name = $start_node
+        WHERE start_st.route_id = $route_id AND start_st.name CONTAINS $start_node
         MATCH (end_st:Station {is_master: false})
-        WHERE end_st.line_name = $line_name AND end_st.station_name = $end_node
+        WHERE end_st.route_id = $route_id AND end_st.name CONTAINS $end_node
         MATCH path = shortestPath((start_st)-[:NEXT_STOP*..30]->(end_st))
         WITH i, nodes(path) as affected_platforms
         UNWIND affected_platforms as s
@@ -270,7 +270,7 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
             i.end_time = datetime(replace($end_time, " ", "T"))
         WITH i
         MATCH (s:Station {is_master: false})
-        WHERE s.line_name = $line_name AND s.station_name = $start_node
+        WHERE s.route_id = $route_id AND s.name CONTAINS $start_node
         MERGE (s)-[r:AFFECTED_BY]->(i)
         RETURN count(r) as connected_count
     """
@@ -285,6 +285,7 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
         affected = item.get("affected")
         location_type = item.get("location_type")
         
+        result = None
         try:
             async with config.neo4j_client.session() as session:
                 if location_type == "BUS":
@@ -305,9 +306,29 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
                     incident_id = hashlib.md5(f"{item.get('startDateTime')}_{item.get('affected')}_{start_st}_{end_st}".encode('utf-8')).hexdigest()
                     
                     if start_st == end_st:
-                        result = await session.run(cypher_query04, incident_id=incident_id, content=item.get("content"), location_type=location_type, start_time=item.get("startDateTime"), end_time=item.get("endDateTime"), line_name=str(item.get("affected")).strip(), start_node=str(start_st).strip(), end_node=str(end_st).strip())
+                        result = await session.run(
+                            cypher_query04, 
+                            incident_id=incident_id, 
+                            content=item.get("content"), 
+                            location_type=location_type, 
+                            start_time=item.get("startDateTime"), 
+                            end_time=item.get("endDateTime"), 
+                            route_id=str(item.get("affected")).strip(), 
+                            start_node=str(start_st).strip(), 
+                            end_node=str(end_st).strip()
+                        )
                     else : 
-                        result = await session.run(cypher_query03, incident_id=incident_id, content=item.get("content"), location_type=location_type, start_time=item.get("startDateTime"), end_time=item.get("endDateTime"), line_name=str(item.get("affected")).strip(), start_node=str(start_st).strip(), end_node=str(end_st).strip())
+                        result = await session.run(
+                            cypher_query03, 
+                            incident_id=incident_id, 
+                            content=item.get("content"), 
+                            location_type=location_type, 
+                            start_time=item.get("startDateTime"), 
+                            end_time=item.get("endDateTime"), 
+                            route_id=str(item.get("affected")).strip(), 
+                            start_node=str(start_st).strip(), 
+                            end_node=str(end_st).strip()
+                        )
                 else :
                     if lat is None or lng is None:
                         logger.warning(f"[MAS01 Agent apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재로 패스.")

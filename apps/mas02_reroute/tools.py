@@ -63,50 +63,76 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
     user_latest_keys = {}
 
     match_pattern = "routine:live:xy:user:*"
-    
     keys = await redis_client.keys(match_pattern)
-    
-    user_latest_keys = {}
     
     if keys:
         for key in keys:
-            tokens = key.split(":")  # ['routine', 'route', 'xy', 'user', '2', '3']
-            user_id = tokens[4]   # "2"
+            if isinstance(key, bytes):
+                key = key.decode('utf-8')
+            tokens = key.split(":")
+            if len(tokens) < 5: continue
+            user_id = tokens[4]
+            user_latest_keys[user_id] = {"key": key}
                 
     logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명")
 
-    # 2. 좌표 비교 연산 수행
+    # 🎯 affected_coords는 완벽한 파이썬 list이므로 전처리 불필요! 일체 터치하지 않습니다.
     affected_user_reco_ids = []
+    affected_user_xy = []
 
     for user_id, info in user_latest_keys.items():
-        # 🎯 [치트키 방어막 1] 이 유저가 이번 사고(incident_id)로 이미 우회로를 안내받았는지 Redis 이력 확인
         reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
         is_already_rerouted = await redis_client.exists(reroute_history_key)
         
         if is_already_rerouted:
-            #  SKIP: 유저 A는 이미 10초 전(혹은 과거)에 우회로를 쏴줬으므로 패스합니다!
             continue 
 
         raw_data = await redis_client.get(info["key"])
         if not raw_data: continue
         
+        if isinstance(raw_data, bytes):
+            raw_data = raw_data.decode('utf-8')
+            
+        # [결정적 보정] Redis 내부 값이 비어있거나 JSON 형태( [, { )가 아니면 
+        # json.loads를 타지 않고 영리하게 스킵하여 DecodeError를 완벽 차단합니다.
+        raw_data = raw_data.strip()
+        if not raw_data or not raw_data.startswith(('[', '{')):
+            logger.warning(f"⚠️ 유저 {user_id}의 Redis 데이터가 올바른 JSON 포맷이 아닙니다. 스킵합니다.")
+            continue
+            
         user_xy_list = json.loads(raw_data)
+        if isinstance(user_xy_list, str):
+            user_xy_list = json.loads(user_xy_list)
+            
         is_user_affected = False
         
-        for node in user_xy_list:
-            if node.get("x") is None or node.get("y") is None: continue
+        for node in user_xy_list["routeXYDtoList"]:
+            # if isinstance(node, str):
+            #     node = node.strip()
+            #     if node.startswith('{'):
+            #         node = json.loads(node)
+            #     else:
+            #         continue
+                
+            if not node or node.get("x") is None or node.get("y") is None: 
+                continue
                 
             u_lng = float(node.get("x"))
             u_lat = float(node.get("y"))
             
             for aff_coord in affected_coords:
+                # 🎯 affected_coords 내부 요소 역시 순수 dict이므로 변환 없이 직통 매핑!
+                if not aff_coord or aff_coord.get("x") is None or aff_coord.get("y") is None: 
+                    continue
+                    
                 aff_lng = float(aff_coord['x'])
                 aff_lat = float(aff_coord['y'])
                 
                 actual_distance = calculate_distance_meters(u_lat, u_lng, aff_lat, aff_lng)
                 
-                if actual_distance <= 10.0:
+                if actual_distance <= 50.0:
                     is_user_affected = True
+                    affected_user_xy.append(user_xy_list['routeXYDtoList'])
                     logger.warning(f"[MAS02 tools.py get_active_users_by_coordinates][신규 난입 포착] 유저 {user_id}번이 통제 구역 {actual_distance:.2f}m 거리에 진입!")
                     break 
                     
@@ -114,9 +140,6 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 
         if is_user_affected:
             affected_user_reco_ids.append(int(user_id))
-            
-            # 그물망에 걸려 가로채기 성공한 유저는 Redis에 이력을 남겨둡니다.
-            # TTL(ex)은 1시간(3600초) 정도로 지정하여, 사고 대응 바운더리 안에서 중복 발송을 막습니다.
             await redis_client.set(name=reroute_history_key, value="DONE", ex=3600)
             
-    return affected_user_reco_ids
+    return affected_user_reco_ids, affected_user_xy

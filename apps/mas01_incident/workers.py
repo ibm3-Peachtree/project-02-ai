@@ -37,7 +37,8 @@ async def redis_topis_listener() :
             kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
             today_str = kst_now.strftime("%Y%m%d")
             # today_str = "20260520"
-            stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
+            # stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
+            stream_keys = [f"incident:서울특별시:동작구:{today_str}:stream"]
             
             # ####################### 테스트용 (실제에선 지우기) #############################
             logger.info("♻️ [MAS01 Worker 1] 테스트를 위해 컨슈머 그룹 초기화를 시작합니다...")
@@ -78,9 +79,6 @@ async def redis_topis_listener() :
                         if not incident_data.get("info"):
                             logger.warning(f"[Stream Worker] {stream_key}에 유효한 돌발 정보가 없습니다.")
                             continue
-                            
-                        # logger.info(f"[Stream Worker] '{stream_key}'에서 새 돌발 상황 포착!")
-                        # logger.info(f"사고 내용 요약: {incident_data.get('info')[:20]}...")
                         
                         # 1단계: 중복 검증
                         is_new = await check_duplicate(incident_data, "redis")

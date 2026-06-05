@@ -303,24 +303,7 @@ class TransportApp:
         }
 
         WITH path_idx, totalCost, idx, {
-          idx: idx, 
-          from_id: fs1.node_id, 
-          
-          from_node: {
-            name: fs1.name,
-            ars_id: coalesce(fs1.ars_id, fs1.station_id, null),
-            x: toFloat(fs1.x),
-            y: toFloat(fs1.y)   
-          },
-          to_id: fs2.node_id, 
-          to_node: {
-            name: fs2.name,
-            ars_id: coalesce(fs2.ars_id, fs2.station_id, null),
-            x: toFloat(fs2.x),
-            y: toFloat(fs2.y)
-          },
-          
-          rel_type: rel_type,
+          idx: idx, from_id: fs1.node_id, from_name: fs1.name, to_id: fs2.node_id, to_name: fs2.name, rel_type: rel_type,
           route_name: CASE 
                         WHEN rel_type = 'TRANSFER' THEN '도보' 
                         WHEN rel_type = 'BOARD' THEN coalesce(p_r.num, p_r.name) + ' 대기'
@@ -421,24 +404,7 @@ class TransportApp:
         WHERE rel_type IS NOT NULL
 
         WITH path_idx, totalCost, idx, {
-          idx: idx, 
-          from_id: fs1.node_id, 
-          
-          from_node: {
-            name: fs1.name,
-            ars_id: coalesce(fs1.ars_id, fs1.station_id, null),
-            x: toFloat(fs1.x), 
-            y: toFloat(fs1.y)
-          },
-          to_id: fs2.node_id, 
-          to_node: {
-            name: fs2.name,
-            ars_id: coalesce(fs2.ars_id, fs2.station_id, null),
-            x: toFloat(fs2.x),
-            y: toFloat(fs2.y)
-          },
-          
-          rel_type: rel_type,
+          idx: idx, from_id: fs1.node_id, from_name: fs1.name, to_id: fs2.node_id, to_name: fs2.name, rel_type: rel_type,
           route_name: CASE 
                         WHEN rel_type = 'TRANSFER' THEN '도보' 
                         WHEN rel_type = 'BOARD' THEN coalesce(p_r.num, p_r.name) + ' 대기'
@@ -548,24 +514,7 @@ class TransportApp:
         WHERE rel_type IS NOT NULL
 
         WITH path_idx, totalCost, idx, {
-          idx: idx, 
-          from_id: fs1.node_id, 
-          
-          from_node: {
-            name: fs1.name,
-            ars_id: coalesce(fs1.ars_id, fs1.station_id, null),
-            x: toFloat(fs1.x),  
-            y: toFloat(fs1.y)
-          },
-          to_id: fs2.node_id, 
-          to_node: {
-            name: fs2.name,
-            ars_id: coalesce(fs2.ars_id, fs2.station_id, null),
-            x: toFloat(fs2.x),
-            y: toFloat(fs2.y)
-          },
-          
-          rel_type: rel_type,
+          idx: idx, from_id: fs1.node_id, from_name: fs1.name, to_id: fs2.node_id, to_name: fs2.name, rel_type: rel_type,
           route_name: CASE 
                         WHEN rel_type = 'TRANSFER' THEN '도보' 
                         WHEN rel_type = 'BOARD' THEN coalesce(p_r.num, p_r.name) + ' 대기'
@@ -620,9 +569,8 @@ class TransportApp:
                 rel_type = row['rel_type']
                 duration_min = round(row['duration_sec'] / 60, 1)
                 
-                # 🎯 객체 구조 그대로 가져오기
-                from_obj = row['from_node']
-                to_obj = row['to_node']
+                clean_from_name = row['from_name'].split(" (")[0]
+                clean_to_name = row['to_name'].split(" (")[0]
 
                 if rel_type == 'BOARD':
                     if current_seg:
@@ -635,22 +583,16 @@ class TransportApp:
                     is_first_link_in_transit = True
                     
                     current_seg = {
-                        "type": "TRANSIT", 
-                        "display_name": [], 
-                        "segment_duration_min": duration_min, 
-                        "total_distance_m": 0, 
-                        "stop_count": 0, 
-                        "stations": [from_obj] # 🎯 객체 삽입
+                        "type": "TRANSIT", "display_name": [], "segment_duration_min": duration_min, 
+                        "total_distance_m": 0, "stop_count": 0, "stations": [clean_from_name]
                     }
                 elif rel_type == 'NEXT_STOP':
                     if current_seg and current_seg['type'] == 'TRANSIT':
                         current_seg['segment_duration_min'] += duration_min
                         current_seg['total_distance_m'] += row['distance']
                         current_seg['stop_count'] += 1
-                        
-                        # 중복 검사 (이름 기준)
-                        if to_obj['name'] not in [s['name'] for s in current_seg['stations']]:
-                            current_seg['stations'].append(to_obj)
+                        if clean_to_name not in current_seg['stations']:
+                            current_seg['stations'].append(clean_to_name)
                         
                         link_buses = set()
                         if row['route_name']:
@@ -668,12 +610,8 @@ class TransportApp:
                         compressed_segments.append(current_seg)
                         
                     tf_seg = {
-                        "type": "TRANSFER", 
-                        "display_name": ["도보"], 
-                        "segment_duration_min": duration_min,
-                        "total_distance_m": row['distance'], 
-                        "stop_count": 0, 
-                        "stations": [from_obj, to_obj] # 🎯 객체들 삽입
+                        "type": "TRANSFER", "display_name": ["도보"], "segment_duration_min": duration_min,
+                        "total_distance_m": row['distance'], "stop_count": 0, "stations": [clean_from_name, clean_to_name]
                     }
                     compressed_segments.append(tf_seg)
                     current_seg = None
@@ -681,8 +619,8 @@ class TransportApp:
                 elif rel_type == 'ALIGHT':
                     if current_seg and current_seg['type'] == 'TRANSIT':
                         current_seg['segment_duration_min'] += duration_min
-                        if to_obj['name'] not in [s['name'] for s in current_seg['stations']]:
-                            current_seg['stations'].append(to_obj)
+                        if clean_to_name not in current_seg['stations']:
+                            current_seg['stations'].append(clean_to_name)
                         current_seg['display_name'] = sorted(list(active_bus_intersection))
 
             if current_seg:
@@ -695,7 +633,7 @@ class TransportApp:
                 if not seg['stations']: continue
                 
                 if seg['type'] == 'TRANSFER' and len(seg['stations']) >= 2:
-                    if seg['stations'][0]['name'] == seg['stations'][-1]['name'] and seg['segment_duration_min'] == 0:
+                    if seg['stations'][0] == seg['stations'][-1] and seg['segment_duration_min'] == 0:
                         continue
                         
                 if not final_segments:
@@ -715,15 +653,14 @@ class TransportApp:
                 
                 clean_st = []
                 for st in seg['stations']:
-                    if not clean_st or clean_st[-1]['name'] != st['name']:
+                    if not clean_st or clean_st[-1] != st:
                         clean_st.append(st)
                 seg['stations'] = clean_st
 
-            # 유사 경로 필터링을 위한 고유 셋 구축 (이름 매핑 방식 유지)
             current_path_stations = set()
             for s in final_segments:
-                for st_obj in s['stations']:
-                    current_path_stations.add(clean_station_core_name(st_obj['name']))
+                for st_name in s['stations']:
+                    current_path_stations.add(clean_station_core_name(st_name))
 
             is_substandard_duplicate = False
             for existing_set in existing_path_station_sets:
@@ -738,6 +675,7 @@ class TransportApp:
                 continue 
                 
             existing_path_station_sets.append(current_path_stations)
+
             transit_seg_count = sum(1 for s in final_segments if s['type'] == 'TRANSIT')
             calculated_transfer = max(0, transit_seg_count - 1)
 

@@ -105,11 +105,12 @@ async def process_and_save_alerts(payload: dict, affected_user_ids: list):
         logger.info(f"[mas02 alert.py Redis Save] 신규 사건 메타 캐시 완료: {incident_id} (TTL: {ttl_seconds}초)")
         
     # 3. 영향권에 포함된 유저 리스트를 돌며 주소록(Set)에 링킹 연산 수행
+    summary_str = json.dumps(summary_result, ensure_ascii=False)
     for user_id in affected_user_ids:
         user_incident_set_key = f"user:incidents:{user_id}"
-        await redis_client.sadd(user_incident_set_key, incident_id)
+        inserted = await redis_client.sadd(user_incident_set_key, summary_str)
         
-        # 유저 세트 자체도 가비지 컬렉션 방지를 위해 48시간 TTL을 연장 갱신해 줍니다.
-        await redis_client.expire(user_incident_set_key, 172800)
+        if inserted :
+            await redis_client.expire(user_incident_set_key, 172800)
         
     logger.info(f"[mas02 alert.py Reroute Notification] 총 {len(affected_user_ids)}명의 유저 알림창에 사건 [{incident_id}] 배달 완료.")
