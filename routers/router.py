@@ -35,7 +35,9 @@ async def live_reroute(user_id) :
 
 @router.get("/summarize_topis")
 async def summarize_topis(user_id) :
-    user_key = f"incident:어쩌구:저쩌구:{user_id}"
+    user_key = f"user:incidents:{user_id}"
     
     data = await config.redis_client.get(user_key)
-    pass
+    data = json.loads(data)
+    logger.info(f"[routers/router.py ] User별 Topis 정보 (data: {data})")
+    return data
