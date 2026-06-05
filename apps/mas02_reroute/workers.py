@@ -6,6 +6,7 @@ import asyncio
 import config
 from config import logger
 from apps.mas02_reroute.tools import get_affected_coordinates_from_neo4j, get_active_users_by_coordinates
+from apps.mas02_reroute.alert import process_and_save_alerts, summarize_notice
 
 SEOUL_GUS = [
     "강남구", "강동구", "강북구", "강서구", "관악구", "광진구", "구로구", "금천구",
@@ -127,10 +128,12 @@ async def redis_incident_consumer_and_rerouter():
                         if affected_coords:
                             # B. Redis XY 데이터를 열어 좌표가 일치하는 유저 ID(recoId) 추출
                             affected_user_ids = await get_active_users_by_coordinates(affected_coords, incident_id)
-                            
                             if affected_user_ids:
                                 logger.info(f"[MAS02 worekrs.py redis_incident_consumer_and_rerouter] [우회 기동] 통제 좌표 영향권 유저 리스트: {affected_user_ids}")
-                                
+                                # 여기에요 gemini 씨! 여기에서 알림 작업을 할 거예요. alert.py 내용을 써서요!
+                                result = await summarize_notice(payload)
+                                await process_and_save_alerts(result, affected_user_ids)
+                                 
                                 # C. ⚡ 걸러진 유저 ID 목록을 기반으로 비동기 다익스트라 우회로 연산 후 Spring Boot로 발송
                                 # (ID들을 던져 개별 다익스트라 처리 후 3단계 send_to_spring_boot 호출)
                                 # push_tasks = [
@@ -139,6 +142,11 @@ async def redis_incident_consumer_and_rerouter():
                                 #     ) for u_id in affected_user_ids
                                 # ]
                                 # await asyncio.gather(*push_tasks)
+                                
+                                for user_id in affected_user_ids:
+                                    reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
+                                    await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
+                                    logger.info(f"[MAS02 workers][History Mark] 유저 {user_id} 우회 플래그 캐싱 완료.")
                                 
                         # ACK 처리 상동
                         await config.redis_client.xack(stream_key, GROUP_NAME, message_id)
@@ -153,7 +161,7 @@ async def redis_incident_consumer_and_rerouter():
                         continue
                         
                     for message_id, payload in active_messages:
-                        # 💡 평탄화 구조이므로 바로 꺼냅니다.
+                        # 평탄화 구조이므로 바로 꺼냅니다.
                         incident_id = payload.get("incident_id")
                         
                         if incident_id:
@@ -166,7 +174,23 @@ async def redis_incident_consumer_and_rerouter():
                                 affected_user_ids = await get_active_users_by_coordinates(affected_coords, incident_id)
                                 if affected_user_ids:
                                     logger.warning(f"[MAS02 workers.py redis_incident_consumer_and_rerouter][순찰 저격 성공] 통제 도중 중간 난입한 유저 포착: {affected_user_ids}")
-                                    # (유저 B용 실시간 우회 경로 루트 생성 및 Spring Boot 발송 지점)
+                                    result = await summarize_notice(payload)
+                                await process_and_save_alerts(result, affected_user_ids)
+                                 
+                                # C. ⚡ 걸러진 유저 ID 목록을 기반으로 비동기 다익스트라 우회로 연산 후 Spring Boot로 발송
+                                # (ID들을 던져 개별 다익스트라 처리 후 3단계 send_to_spring_boot 호출)
+                                # push_tasks = [
+                                #     send_reroute_to_spring_boot(
+                                #         await build_reroute_json_by_id(u_id)
+                                #     ) for u_id in affected_user_ids
+                                # ]
+                                # await asyncio.gather(*push_tasks)
+                                
+                                for user_id in affected_user_ids:
+                                    reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
+                                    await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
+                                    logger.info(f"[MAS02 workers][History Mark] 유저 {user_id} 우회 플래그 캐싱 완료.")
+                                
             # CPU 과열 방지용 미세 휴식
             await asyncio.sleep(0.1)
 

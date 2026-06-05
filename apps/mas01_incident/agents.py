@@ -2,6 +2,8 @@
 from typing import TypedDict, Annotated, Sequence, Dict, List, Any
 import json
 import hashlib
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from openai import AsyncOpenAI
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
@@ -39,7 +41,6 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
             val_lat = float(raw_lat)
             val_lng = float(raw_lng)
             
-            # 🎯 대한민국 지리 규칙 기반의 자동 스왑 디펜스 코드
             # 100이 넘는 값(124~132)이 lat(위도)에 들어와 있다면 명백한 오류이므로 자리를 바꿉니다.
             if val_lat > 100.0 and val_lng < 50.0:
                 logger.warning(f"🔄 [Redis 축 전도 감지] lat과 lng가 뒤바뀌어 들어왔습니다. 강제 교정합니다. (입력 lat: {val_lat}, lng: {val_lng})")
@@ -55,9 +56,10 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
     logger.info(f"[MAS01 Agent : extract_affected] 보정 완료된 레디스 데이터 : {raw_data}")
     
     kanana_client = AsyncOpenAI(base_url=config.KANANA_MODEL_02_URL, api_key="fake-key")
+    current_time = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d : %H:%M:%S")
     
-    system_instruction = """
-        [현재 시스템 기준 일시] : 2026-05-20 : 13:00:00
+    system_instruction = f"""
+        [현재 시스템 기준 일시] : {current_time}
         
         당신은 대한민국 교통 및 지리 전문가입니다.
         사용자가 입력한 교통 공지사항 정보를 분석하여, 오직 공간 좌표 추출이 가능한 실제 인프라(도로 구간, 건물 지번 주소, 지하철 노선, 5자리 숫자의 버스 정류소 ID)만 '각각 하나의 독립된 항목'으로 완벽히 분리해야 합니다. 
@@ -65,33 +67,33 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
         🚨 **[분석 대상 제외 절대 규칙]: 본문에 등장하는 3자리 또는 4자리 형태의 시내/광역 버스 노선 번호(예: 571, 5012, 5528, 405 등) 및 버스 운수 회사 이름은 공간 좌표를 가지지 않으므로 분석 및 추출 대상이 아닙니다. 최종 출력 JSON 배열(`[]`)에 절대로 포함시키지 말고 완전히 무시하여 폐기하십시오.**
 
         🚨 **조사 '및', '와/과', 또는 쉼표(,)로 나열된 여러 장소나 구간은 절대로 하나의 JSON 객체에 묶어서 작성하지 마십시오. 반드시 각각 독립된 JSON 객체로 찢어서 출력해야 합니다.**
-        
+
         출력 JSON 구조:
         [
-            {
-                "affected" : "인프라 좌표를 생성할 수 있는 구간 명칭(A ↔ B) 또는 순수 지하철 호선명 또는 건물 지번 주소 또는 본문에 명시된 5자리 정류소 ID 숫자 (버스 노선 번호 절대 금지)",,
+            {{
+                "affected" : "인프라 좌표를 생성할 수 있는 구간 명칭(A ↔ B) 또는 순수 지하철 호선명 또는 건물 지번 주소 또는 본문에 명시된 5자리 정류소 ID 숫자 (버스 노선 번호 절대 금지)",
                 "location_type" : "BETWEEN_NODES 또는 LINEAR_REFERENCE 또는 ADDRESS_POINT 또는 BUS 또는 SUBWAY 중 하나로 분류",
-                "details" : {
+                "details" : {{
                     "road_name" : "해당하는 도로 이름 또는 지하철 호선명. 없다면 null",
                     "start_node" : "BETWEEN_NODES 또는 SUBWAY 유형일 때 시작 지점/시작 역 명칭. 없다면 null",
-                    "end_node" : "BETWEEN_NODES 또는 SUBWAY 유형일 때 종료 지점/종료 역 명칭. 없다면 null",,
-                    "anchor_node" : LINEAR_REFERENCE 유형일 때 기준이 되는 랜드마크 명칭 (예: 금하지하차도, 행주대교). 없다면 null,
-                    "offset_start" : LINEAR_REFERENCE 유형일 때 시작 거리(정수형, m 단위, 예: 250). 없다면 null,
-                    "offset_end" : LINEAR_REFERENCE 유형일 때 종료 거리(정수형, m 단위, 예: 650). 없다면 null,
+                    "end_node" : "BETWEEN_NODES 또는 SUBWAY 유형일 때 종료 지점/종료 역 명칭. 없다면 null",
+                    "anchor_node" : "LINEAR_REFERENCE 유형일 때 기준이 되는 랜드마크 명칭 (예: 금하지하차도, 행주대교). 없다면 null",
+                    "offset_start" : "LINEAR_REFERENCE 유형일 때 시작 거리(정수형, m 단위, 예: 250). 없다면 null",
+                    "offset_end" : "LINEAR_REFERENCE 유형일 때 종료 거리(정수형, m 단위, 예: 650). 없다면 null",
                     "address" : "ADDRESS_POINT 유형일 때의 주소 정보. 없다면 null"
-                },
-                "lat" : 본문에 직접 명시된 위도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 북위 약 33°~38°에 위치,
-                "lng" : 본문에 직접 명시된 경도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 동경 약 126°~131°에 위치,
+                }},
+                "lat" : "본문에 직접 명시된 위도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 북위 약 33°~38°에 위치",
+                "lng" : "본문에 직접 명시된 경도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 동경 약 126°~131°에 위치",
                 "si" : "본문에 명시되거나 유추 가능한 도시 이름 (예: 서울특별시)",
                 "gu" : "본문에 명시되거나 유추 가능한 지역구 이름 (예: 서초구, 중구 등)",
                 "startDateTime" : "datetime 형식. %Y-%m-%d %H:%M:%S 형태",
                 "endDateTime" : "datetime 형식. %Y-%m-%d %H:%M:%S 형태",
                 "content" : "이 특정 장소와 관련된 통제 내용 요약"
-            }
+            }}
         ]
-        
+
         위와 같은 JSON 구조로 만들어야 합니다.
-        
+
         다음과 같은 step에 따라 JSON 객체를 생성해주세요.
         1. 위치 및 인프라 유형(location_type) 분류하기 : 교통 공지사항 정보에 좌표 추출이 가능한 실제 인프라 유형들이 어떤 것들이 있는지 파악하고, 좌표가 없는 버스 노선 번호는 폐기 처리하세요.
         2. location_type별로 JSON 객체 완성하기 : 분류한 인프라 객체들을 기재 규칙에 따라 각각 완성해주세요.
@@ -103,7 +105,7 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
         - "BUS": 본문 텍스트 내에 **'반드시 연속된 5자리의 숫자로만 구성된 순수 버스 정류소 고유 번호(예 : 01234)'**가 명확히 박혀 있는 경우에만 분류합니다. 3자리나 4자리 숫자는 버스 노선 번호이므로 절대로 이 유형으로 분류할 수 없습니다.
             - 본문 텍스트를 검사하여 **5자리 숫자로 이루어진 정류소 ID**가 실제로 존재하지 않는다면, "BUS" 유형의 JSON 객체는 최종 출력 배열(`[]`)에 단 하나도 생성하거나 포함시켜서는 안 됩니다.
         - "SUBWAY" : 지하철 및 철도 노선(예 : 2호선, 경의중앙선 등)의 통제가 발생하는 경우
-        
+
         [location_type 별 기재 규칙]
         - "BETWEEN_NODES" : 
             - [구간 분류 및 나열형 지명 분리 절대 규칙]:
@@ -119,22 +121,21 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
             1. 지하철 관련 공지는 "location_type"을 "SUBWAY"로 지정하세요.
                 - "affected"에는 오직 지하철 호선 이름만 단독으로 작성하세요. (7호선 자양역처럼 지하철 노선 + 지하철 역 이름 조합으로 적기 금지. '7호선'처럼 지하철 노선만 기재해야 한다.)
                 - 역 이름은 무조건 `details` 내부의 `start_node`와 `end_node`로만 격리해야 합니다.
-            2. **"affected"에는 오직 지하철/철도 호선 이름만 단독으로 깨끗하게 작성하세요.** 
-                -  **절대 금지:** `affected` 필드에 역 이름을 함께 붙여서 `"경의중앙선 (서울역 ↔ 수색역)"` 또는 `"7호선 자양역"` 형태로 출력하는 것은 절대 금지합니다. 오직 노선명(`"경의중앙선"`)만 적으세요
+            2. **"affected"에는 오직 지하철/철도 호선 이름만 단독으로 깨끗하게 작성하세요.** - **절대 금지:** `affected` 필드에 역 이름을 함께 붙여서 `"경의중앙선 (서울역 ↔ 수색역)"` 또는 `"7호선 자양역"` 형태로 출력하는 것은 절대 금지합니다. 오직 노선명(`"경의중앙선"`)만 적으세요
             3. 지하철 호선이 여러 개인 경우, 각각 호선을 affected에 각각 따로 기재해야 하며, start_node, end_node도 각각에 맞도록 기재해야 합니다.
             4. 특정 역 하나만 문제가 발생했다면 start_node와 end_node를 같게 적어야 합니다.   
         - "ADDRESS_POINT" :
             - 출력 JSON 구조에 따라 기재
         - "LINEAR_REFERENCE" :
             - 출력 JSON 구조에 따라 기재      
-          
+        
         [DateTime 설정 규칙]
         - 본문에 연도가 생략되어 있다면, 텍스트 상단에 주어지는 `[현재 시스템 기준 일시]`의 연도를 참조하여 %Y-%m-%d %H:%M:%S 형식으로 완성하세요.
         - 본문에 '종료 일시'가 구체적인 숫자로 명시되어 있다면, 반드시 그 날짜를 해석하여 연도(%Y), 월(%m), 일(%d), 시분초(%H:%M:%S) 형태에 맞게 입력하세요.
         - 오직 본문에 종료 시점이나 기간에 대한 언급이 '아예 없을 때'에만 endDateTime을 '2099-12-31 23:59:59'로 설정하세요.
 
         반드시 순수 JSON 형식으로만 응답하세요.        
-    """
+        """
 
     response = await kanana_client.chat.completions.create(
         model="kakaocorp/kanana-1.5-8b-instruct-2505",

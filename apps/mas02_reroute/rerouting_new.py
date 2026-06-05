@@ -57,9 +57,9 @@ class TransportApp:
     async def build_gds_graph1(self):
         logger.info("Best GDS Graph [돌발 상황 가중치 반영형 복합망] 가상 프로젝션 빌드 시작...")
         async with self.driver.session(database="neo4j") as session:
-            # 🎯 [교정] 최신 GDS 라이브러리 스펙에 맞게 .cypher 명칭을 삭제하고 표준 인자 포맷으로 래핑합니다.
+            # 🎯 [교정] gds.graph.project.cypher 로 변경하여 쿼리 텍스트를 파싱하도록 강제합니다.
             project_query = """
-            CALL gds.graph.project(
+            CALL gds.graph.project.cypher(
                 'network_best',
                 'MATCH (s:Station) RETURN id(s) AS id',
                 
@@ -90,7 +90,7 @@ class TransportApp:
                         ELSE 
                             5.0 + (dur_sec / 60.0) * 1.2
                         END AS weight',
-                { concurrency: 4 }
+                {}
             )
             """
             try:
@@ -111,9 +111,9 @@ class TransportApp:
             except Exception:
                 pass
 
-            # 🎯 [교정] 동일하게 gds.graph.project 표준 구문으로 업데이트
+            # 🎯 [교정] 동일하게 gds.graph.project.cypher 구문으로 업데이트
             project_query = """
-            CALL gds.graph.project(
+            CALL gds.graph.project.cypher(
                 'network_subway_best',
                 'MATCH (s:Station) RETURN id(s) AS id',
                 
@@ -154,7 +154,7 @@ class TransportApp:
                          ELSE 
                              2.0 + (dur_sec / 60.0) * 1.1
                        END AS weight',
-                { concurrency: 4 }
+                {}
             )
             """
             try:
@@ -175,9 +175,9 @@ class TransportApp:
             except Exception:
                 pass
 
-            # 🎯 [교정] 동일하게 gds.graph.project 표준 구문으로 업데이트
+            # 🎯 [교정] 동일하게 gds.graph.project.cypher 구문으로 업데이트
             project_query = """
-            CALL gds.graph.project(
+            CALL gds.graph.project.cypher(
                 'network_bus_only',
                 'MATCH (s:Station) 
                  WHERE NOT s.node_id STARTS WITH "SUBWAY" AND NOT s.node_id CONTAINS "_호선"
@@ -206,7 +206,7 @@ class TransportApp:
                  WHERE (NOT s1.node_id STARTS WITH "SUBWAY") AND (NOT s2.node_id STARTS WITH "SUBWAY") 
                    AND (coalesce(tf.sub_type, "") <> "SUBWAY_TRANSFER")
                  RETURN id(s1) AS source, id(s2) AS target, "TRANSFER" AS type, (toFloat(coalesce(tf.duration_normal, 0)) / 60.0) AS weight',
-                { concurrency: 4 }
+                {}
             )
             """
             try:
@@ -303,7 +303,24 @@ class TransportApp:
         }
 
         WITH path_idx, totalCost, idx, {
-          idx: idx, from_id: fs1.node_id, from_name: fs1.name, to_id: fs2.node_id, to_name: fs2.name, rel_type: rel_type,
+          idx: idx, 
+          from_id: fs1.node_id, 
+          
+          from_node: {
+            name: fs1.name,
+            ars_id: coalesce(fs1.ars_id, fs1.station_id, null),
+            x: toFloat(fs1.x),
+            y: toFloat(fs1.y)   
+          },
+          to_id: fs2.node_id, 
+          to_node: {
+            name: fs2.name,
+            ars_id: coalesce(fs2.ars_id, fs2.station_id, null),
+            x: toFloat(fs2.x),
+            y: toFloat(fs2.y)
+          },
+          
+          rel_type: rel_type,
           route_name: CASE 
                         WHEN rel_type = 'TRANSFER' THEN '도보' 
                         WHEN rel_type = 'BOARD' THEN coalesce(p_r.num, p_r.name) + ' 대기'
@@ -321,7 +338,7 @@ class TransportApp:
         try:
             async with self.driver.session(database="neo4j") as session:
                 result = await session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time)
-                return [dict(record) for record in await result.all()]
+                return [dict(record) for record in [r async for r in result]]
         except Exception as e:
             print(f"❌ Neo4j 쿼리 1 실행 에러: {e}")
             return []
@@ -404,7 +421,24 @@ class TransportApp:
         WHERE rel_type IS NOT NULL
 
         WITH path_idx, totalCost, idx, {
-          idx: idx, from_id: fs1.node_id, from_name: fs1.name, to_id: fs2.node_id, to_name: fs2.name, rel_type: rel_type,
+          idx: idx, 
+          from_id: fs1.node_id, 
+          
+          from_node: {
+            name: fs1.name,
+            ars_id: coalesce(fs1.ars_id, fs1.station_id, null),
+            x: toFloat(fs1.x), 
+            y: toFloat(fs1.y)
+          },
+          to_id: fs2.node_id, 
+          to_node: {
+            name: fs2.name,
+            ars_id: coalesce(fs2.ars_id, fs2.station_id, null),
+            x: toFloat(fs2.x),
+            y: toFloat(fs2.y)
+          },
+          
+          rel_type: rel_type,
           route_name: CASE 
                         WHEN rel_type = 'TRANSFER' THEN '도보' 
                         WHEN rel_type = 'BOARD' THEN coalesce(p_r.num, p_r.name) + ' 대기'
@@ -422,7 +456,7 @@ class TransportApp:
         try:
             async with self.driver.session(database="neo4j") as session:
                 result = await session.run(cypher_query, start_id=start_id, end_id=end_id, blocked_ids=blocked_ids)
-                return [dict(record) for record in await result.all()]
+                return [dict(record) for record in [r async for r in result]]
         except Exception as e:
             print(f"❌ Neo4j 쿼리 2 실행 에러: {e}")
             return []
@@ -514,7 +548,24 @@ class TransportApp:
         WHERE rel_type IS NOT NULL
 
         WITH path_idx, totalCost, idx, {
-          idx: idx, from_id: fs1.node_id, from_name: fs1.name, to_id: fs2.node_id, to_name: fs2.name, rel_type: rel_type,
+          idx: idx, 
+          from_id: fs1.node_id, 
+          
+          from_node: {
+            name: fs1.name,
+            ars_id: coalesce(fs1.ars_id, fs1.station_id, null),
+            x: toFloat(fs1.x),  
+            y: toFloat(fs1.y)
+          },
+          to_id: fs2.node_id, 
+          to_node: {
+            name: fs2.name,
+            ars_id: coalesce(fs2.ars_id, fs2.station_id, null),
+            x: toFloat(fs2.x),
+            y: toFloat(fs2.y)
+          },
+          
+          rel_type: rel_type,
           route_name: CASE 
                         WHEN rel_type = 'TRANSFER' THEN '도보' 
                         WHEN rel_type = 'BOARD' THEN coalesce(p_r.num, p_r.name) + ' 대기'
@@ -532,7 +583,7 @@ class TransportApp:
         try:
             async with self.driver.session(database="neo4j") as session:
                 result = await session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time, blocked_ids=blocked_ids)
-                return [dict(record) for record in await result.all()]
+                return [dict(record) for record in [r async for r in result]]
         except Exception as e:
             print(f"❌ Neo4j 쿼리 3 실행 에러: {e}")
             return []
@@ -569,8 +620,9 @@ class TransportApp:
                 rel_type = row['rel_type']
                 duration_min = round(row['duration_sec'] / 60, 1)
                 
-                clean_from_name = row['from_name'].split(" (")[0]
-                clean_to_name = row['to_name'].split(" (")[0]
+                # 🎯 객체 구조 그대로 가져오기
+                from_obj = row['from_node']
+                to_obj = row['to_node']
 
                 if rel_type == 'BOARD':
                     if current_seg:
@@ -583,16 +635,22 @@ class TransportApp:
                     is_first_link_in_transit = True
                     
                     current_seg = {
-                        "type": "TRANSIT", "display_name": [], "segment_duration_min": duration_min, 
-                        "total_distance_m": 0, "stop_count": 0, "stations": [clean_from_name]
+                        "type": "TRANSIT", 
+                        "display_name": [], 
+                        "segment_duration_min": duration_min, 
+                        "total_distance_m": 0, 
+                        "stop_count": 0, 
+                        "stations": [from_obj] # 🎯 객체 삽입
                     }
                 elif rel_type == 'NEXT_STOP':
                     if current_seg and current_seg['type'] == 'TRANSIT':
                         current_seg['segment_duration_min'] += duration_min
                         current_seg['total_distance_m'] += row['distance']
                         current_seg['stop_count'] += 1
-                        if clean_to_name not in current_seg['stations']:
-                            current_seg['stations'].append(clean_to_name)
+                        
+                        # 중복 검사 (이름 기준)
+                        if to_obj['name'] not in [s['name'] for s in current_seg['stations']]:
+                            current_seg['stations'].append(to_obj)
                         
                         link_buses = set()
                         if row['route_name']:
@@ -610,8 +668,12 @@ class TransportApp:
                         compressed_segments.append(current_seg)
                         
                     tf_seg = {
-                        "type": "TRANSFER", "display_name": ["도보"], "segment_duration_min": duration_min,
-                        "total_distance_m": row['distance'], "stop_count": 0, "stations": [clean_from_name, clean_to_name]
+                        "type": "TRANSFER", 
+                        "display_name": ["도보"], 
+                        "segment_duration_min": duration_min,
+                        "total_distance_m": row['distance'], 
+                        "stop_count": 0, 
+                        "stations": [from_obj, to_obj] # 🎯 객체들 삽입
                     }
                     compressed_segments.append(tf_seg)
                     current_seg = None
@@ -619,8 +681,8 @@ class TransportApp:
                 elif rel_type == 'ALIGHT':
                     if current_seg and current_seg['type'] == 'TRANSIT':
                         current_seg['segment_duration_min'] += duration_min
-                        if clean_to_name not in current_seg['stations']:
-                            current_seg['stations'].append(clean_to_name)
+                        if to_obj['name'] not in [s['name'] for s in current_seg['stations']]:
+                            current_seg['stations'].append(to_obj)
                         current_seg['display_name'] = sorted(list(active_bus_intersection))
 
             if current_seg:
@@ -633,7 +695,7 @@ class TransportApp:
                 if not seg['stations']: continue
                 
                 if seg['type'] == 'TRANSFER' and len(seg['stations']) >= 2:
-                    if seg['stations'][0] == seg['stations'][-1] and seg['segment_duration_min'] == 0:
+                    if seg['stations'][0]['name'] == seg['stations'][-1]['name'] and seg['segment_duration_min'] == 0:
                         continue
                         
                 if not final_segments:
@@ -653,14 +715,15 @@ class TransportApp:
                 
                 clean_st = []
                 for st in seg['stations']:
-                    if not clean_st or clean_st[-1] != st:
+                    if not clean_st or clean_st[-1]['name'] != st['name']:
                         clean_st.append(st)
                 seg['stations'] = clean_st
 
+            # 유사 경로 필터링을 위한 고유 셋 구축 (이름 매핑 방식 유지)
             current_path_stations = set()
             for s in final_segments:
-                for st_name in s['stations']:
-                    current_path_stations.add(clean_station_core_name(st_name))
+                for st_obj in s['stations']:
+                    current_path_stations.add(clean_station_core_name(st_obj['name']))
 
             is_substandard_duplicate = False
             for existing_set in existing_path_station_sets:
@@ -675,7 +738,6 @@ class TransportApp:
                 continue 
                 
             existing_path_station_sets.append(current_path_stations)
-
             transit_seg_count = sum(1 for s in final_segments if s['type'] == 'TRANSIT')
             calculated_transfer = max(0, transit_seg_count - 1)
 

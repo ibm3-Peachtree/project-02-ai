@@ -1,5 +1,3 @@
-# apps/mas02_reroute/rerouting.py
-
 import os
 import json
 import time
@@ -15,118 +13,134 @@ load_dotenv()
 
 class TransportApp:
     def __init__(self):
-        # 자체 driver 생성 코드를 제거하고, config에 개통된 글로벌 neo4j_client를 바인딩합니다.
+        # [교정] __init__은 절대 async def로 만들면 안 됩니다. 동기식으로 선언하되 세션 객체만 정상 바인딩합니다.
         self.driver = config.neo4j_client
         
-    def delete_gds_graph(self):
-        self.delete_gds_graph1()
-        self.delete_gds_graph2()
-        self.delete_gds_graph3()
+    def close(self):
+        pass
         
-    def delete_gds_graph1(self):
+    async def delete_gds_graph(self):
+        await self.delete_gds_graph1()
+        await self.delete_gds_graph2()
+        await self.delete_gds_graph3()
+        
+    async def delete_gds_graph1(self):
         logger.info("기존 가상 메모리 그래프(network_best) 삭제 요청...")
-        with self.driver.session(database="neo4j") as session:
+        async with self.driver.session(database="neo4j") as session:
             drop_query = "CALL gds.graph.drop('network_best', false) YIELD graphName;"
             try:
-                session.run(drop_query)
+                await session.run(drop_query)
                 time.sleep(0.5) 
             except Exception:
                 pass
             
-    def delete_gds_graph2(self):
+    async def delete_gds_graph2(self):
         logger.info("기존 가상 메모리 그래프(network_subway_best) 삭제 요청...")
-        with self.driver.session(database="neo4j") as session:
+        async with self.driver.session(database="neo4j") as session:
             drop_query = "CALL gds.graph.drop('network_subway_best', false) YIELD graphName;"
             try:
-                session.run(drop_query)
+                await session.run(drop_query)
                 time.sleep(0.5) 
             except Exception:
                 pass
     
-    def delete_gds_graph3(self):
+    async def delete_gds_graph3(self):
         logger.info("기존 가상 메모리 그래프(network_bus_only) 삭제 요청...")
-        with self.driver.session(database="neo4j") as session:
+        async with self.driver.session(database="neo4j") as session:
             drop_query = "CALL gds.graph.drop('network_bus_only', false) YIELD graphName;"
             try:
-                session.run(drop_query)
+                await session.run(drop_query)
                 time.sleep(0.3) 
             except Exception:
                 pass
             
-    def build_gds_graph1(self):
-        logger.info("Best GDS Graph [수단 탑승 최우선 및 도보 차선책 계층화형] 가상 프로젝션 빌드 시작...")
-        with self.driver.session(database="neo4j") as session:
+    async def build_gds_graph1(self):
+        logger.info("Best GDS Graph [돌발 상황 가중치 반영형 복합망] 가상 프로젝션 빌드 시작...")
+        async with self.driver.session(database="neo4j") as session:
+            # 🎯 [교정] gds.graph.project.cypher 로 변경하여 쿼리 텍스트를 파싱하도록 강제합니다.
             project_query = """
             CALL gds.graph.project.cypher(
                 'network_best',
                 'MATCH (s:Station) RETURN id(s) AS id',
                 
                 'MATCH (s1:Station)-[r:NEXT_STOP|ALIGHT]->(s2:Station)
-                RETURN id(s1) AS source, id(s2) AS target, type(r) AS type, 
-                        (toFloat(coalesce(r.duration_normal, 120)) / 60.0) AS weight
+                OPTIONAL MATCH (s1)-[:AFFECTED_BY]->(i1:Incident)
+                OPTIONAL MATCH (s2)-[:AFFECTED_BY]->(i2:Incident)
+                WITH s1, s2, r, (toFloat(coalesce(r.duration_normal, 120)) / 60.0) AS base_weight,
+                     CASE WHEN i1 IS NOT NULL OR i2 IS NOT NULL THEN 60.0 ELSE 0.0 END AS incident_penalty
+                RETURN id(s1) AS source, id(s2) AS target, type(r) AS type, (base_weight + incident_penalty) AS weight
                 
                 UNION ALL
                 
                 MATCH (s1:Station)-[b:BOARD]->(s2:Station)
-                RETURN id(s1) AS source, id(s2) AS target, "BOARD" AS type, 
-                        (toFloat(coalesce(b.duration_normal, 180)) / 60.0) + 2.0 AS weight
+                OPTIONAL MATCH (s2)-[:AFFECTED_BY]->(i:Incident)
+                WITH s1, s2, b, (toFloat(coalesce(b.duration_normal, 180)) / 60.0) + 2.0 AS base_weight,
+                     CASE WHEN i IS NOT NULL THEN 60.0 ELSE 0.0 END AS incident_penalty
+                RETURN id(s1) AS source, id(s2) AS target, "BOARD" AS type, (base_weight + incident_penalty) AS weight
                 
                 UNION ALL
                 
-                // [도보 가중치 패널티 스케일링 현실화]
                 MATCH (s1:Station)-[tf:TRANSFER]->(s2:Station)
                 WHERE tf.type = "TRANSFER"
                 WITH s1, s2, tf, (toFloat(coalesce(tf.duration_normal, 0))) AS dur_sec
                 RETURN id(s1) AS source, id(s2) AS target, "TRANSFER" AS type, 
                         CASE 
-                        // 도보 거리가 너무 길어질 경우 (3분 초과) 패널티를 크게 주어 장거리 도보 차단
                         WHEN dur_sec > 180 THEN 
                             15.0 + ((180 / 60.0) * 1.5) + (((dur_sec - 180) / 60.0) * 10.0)
                         ELSE 
                             5.0 + (dur_sec / 60.0) * 1.2
-                        END AS weight'
+                        END AS weight',
+                {}
             )
             """
             try:
-                project_result = session.run(project_query)
-                record = project_result.single()
+                project_result = await session.run(project_query)
+                record = await project_result.single()
                 if record:
-                    logger.info("[성공] 수단 탑승 우선순위 계층화 가상 그래프 빌드 완료!")
+                    logger.info("[성공] 수단 탑승 우선순위 및 돌발 페널티 반영 가상 그래프 빌드 완료!")
             except Exception as e:
                 logger.error(f"\n❌ 가상 그래프 빌드 함수 내부 에러: {e}\n")
                 raise e
-    
-    def build_gds_graph2(self):
-        logger.info("Subway GDS Graph [데이터 속성 맞춤 지하철 최우선형] 가상 프로젝션 빌드 시작...")
-        with self.driver.session(database="neo4j") as session:
+
+    async def build_gds_graph2(self):
+        logger.info("Subway GDS Graph [돌발 상황 가중치 반영형 지하철 최우선망] 가상 프로젝션 빌드 시작...")
+        async with self.driver.session(database="neo4j") as session:
             try:
-                session.run("CALL gds.graph.drop('network_subway_best', false)")
+                await session.run("CALL gds.graph.drop('network_subway_best', false)")
                 time.sleep(0.2)
             except Exception:
                 pass
 
+            # 🎯 [교정] 동일하게 gds.graph.project.cypher 구문으로 업데이트
             project_query = """
             CALL gds.graph.project.cypher(
                 'network_subway_best',
                 'MATCH (s:Station) RETURN id(s) AS id',
                 
                 'MATCH (s1:Station)-[r:NEXT_STOP|ALIGHT]->(s2:Station)
-                WITH s1, s2, r, (toFloat(coalesce(r.duration_normal, 120)) / 60.0) AS base_weight
-                RETURN id(s1) AS source, id(s2) AS target, type(r) AS type,
+                OPTIONAL MATCH (s1)-[:AFFECTED_BY]->(i1:Incident)
+                OPTIONAL MATCH (s2)-[:AFFECTED_BY]->(i2:Incident)
+                WITH s1, s2, r, (toFloat(coalesce(r.duration_normal, 120)) / 60.0) AS base_weight,
+                     CASE WHEN i1 IS NOT NULL OR i2 IS NOT NULL THEN 60.0 ELSE 0.0 END AS incident_penalty
+                WITH s1, s2, r, base_weight, incident_penalty,
                        CASE 
                          WHEN coalesce(r.type, "") = "SUBWAY" OR coalesce(s1.type, "") = "SUBWAY" OR coalesce(s2.type, "") = "SUBWAY" THEN base_weight * 0.25
                          ELSE base_weight 
                        END AS weight
+                RETURN id(s1) AS source, id(s2) AS target, type(r) AS type, (weight + incident_penalty) AS weight
                 
                 UNION ALL
                 
                 MATCH (s1:Station)-[b:BOARD]->(s2:Station)
-                WITH s1, s2, b, (toFloat(coalesce(b.duration_normal, 180)) / 60.0) AS board_cost
-                RETURN id(s1) AS source, id(s2) AS target, "BOARD" AS type,
+                OPTIONAL MATCH (s2)-[:AFFECTED_BY]->(i:Incident)
+                WITH s1, s2, b, (toFloat(coalesce(b.duration_normal, 180)) / 60.0) AS board_cost,
+                     CASE WHEN i IS NOT NULL THEN 60.0 ELSE 0.0 END AS incident_penalty
+                WITH s1, s2, b, board_cost, incident_penalty,
                        CASE 
                          WHEN coalesce(s2.type, "") = "SUBWAY" THEN board_cost * 0.1
                          ELSE board_cost + 12.0
                        END AS weight
+                RETURN id(s1) AS source, id(s2) AS target, "BOARD" AS type, (weight + incident_penalty) AS weight
                 
                 UNION ALL
                 
@@ -139,29 +153,29 @@ class TransportApp:
                              35.0 + (((dur_sec - 180) / 60.0) * 15.0)
                          ELSE 
                              2.0 + (dur_sec / 60.0) * 1.1
-                       END AS weight'
+                       END AS weight',
+                {}
             )
             """
             try:
-                project_result = session.run(project_query)
-                record = project_result.single()
+                project_result = await session.run(project_query)
+                record = await project_result.single()
                 if record and record["graphName"]:
                     logger.info(f"[성공] 가상 그래프 '{record['graphName']}' 메모리 프로젝션 빌드 성공!")
             except Exception as e:
                 logger.error(f"\n[치명적 오류] 가상 그래프 빌드 함수 내부에서 프로젝션 실패: {e}\n")
                 raise e
-    
-    def build_gds_graph3(self):
-        logger.info("Bus-Only GDS Graph [OOM 방어형 초경량 레이어 격리] 빌드 시작...")
-        with self.driver.session(database="neo4j") as session:
+
+    async def build_gds_graph3(self):
+        logger.info("Bus-Only GDS Graph [돌발 상황 가중치 반영형 버스 전용망] 빌드 시작...")
+        async with self.driver.session(database="neo4j") as session:
             try:
-                session.run("CALL gds.graph.drop('network_bus_only', false)")
+                await session.run("CALL gds.graph.drop('network_bus_only', false)")
                 time.sleep(0.2)
             except Exception:
                 pass
 
-            # [OOM 박멸 핵심]: WHERE 조건의 문자열 연산을 전면 제거하고 
-            # 라벨과 관계선 종류 자체를 분리하여 오직 'BUS' 관련 컴포넌트만 메모리에 다이렉트로 올립니다.
+            # 🎯 [교정] 동일하게 gds.graph.project.cypher 구문으로 업데이트
             project_query = """
             CALL gds.graph.project.cypher(
                 'network_bus_only',
@@ -171,32 +185,40 @@ class TransportApp:
                 
                 'MATCH (s1:Station)-[r:NEXT_STOP|ALIGHT]->(s2:Station)
                  WHERE NOT s1.node_id STARTS WITH "SUBWAY" AND NOT s2.node_id STARTS WITH "SUBWAY"
-                 RETURN id(s1) AS source, id(s2) AS target, type(r) AS type, (toFloat(coalesce(r.duration_normal, 120)) / 60.0) AS weight
+                 OPTIONAL MATCH (s1)-[:AFFECTED_BY]->(i1:Incident)
+                 OPTIONAL MATCH (s2)-[:AFFECTED_BY]->(i2:Incident)
+                 WITH s1, s2, r, (toFloat(coalesce(r.duration_normal, 120)) / 60.0) AS base_weight,
+                      CASE WHEN i1 IS NOT NULL OR i2 IS NOT NULL THEN 60.0 ELSE 0.0 END AS incident_penalty
+                 RETURN id(s1) AS source, id(s2) AS target, type(r) AS type, (base_weight + incident_penalty) AS weight
                 
                  UNION ALL
                 
                  MATCH (s1:Station)-[b:BOARD]->(s2:Station)
                  WHERE NOT s1.node_id STARTS WITH "SUBWAY" AND NOT s2.node_id STARTS WITH "SUBWAY"
-                 RETURN id(s1) AS source, id(s2) AS target, "BOARD" AS type, (toFloat(coalesce(b.duration_normal, 180)) / 60.0) + 2.0 AS weight
+                 OPTIONAL MATCH (s2)-[:AFFECTED_BY]->(i:Incident)
+                 WITH s1, s2, b, (toFloat(coalesce(b.duration_normal, 180)) / 60.0) + 2.0 AS base_weight,
+                      CASE WHEN i IS NOT NULL THEN 60.0 ELSE 0.0 END AS incident_penalty
+                 RETURN id(s1) AS source, id(s2) AS target, "BOARD" AS type, (base_weight + incident_penalty) AS weight
                 
                  UNION ALL
                 
                  MATCH (s1:Station)-[tf:TRANSFER]->(s2:Station)
                  WHERE (NOT s1.node_id STARTS WITH "SUBWAY") AND (NOT s2.node_id STARTS WITH "SUBWAY") 
                    AND (coalesce(tf.sub_type, "") <> "SUBWAY_TRANSFER")
-                 RETURN id(s1) AS source, id(s2) AS target, "TRANSFER" AS type, (toFloat(coalesce(tf.duration_normal, 0)) / 60.0) AS weight'
+                 RETURN id(s1) AS source, id(s2) AS target, "TRANSFER" AS type, (toFloat(coalesce(tf.duration_normal, 0)) / 60.0) AS weight',
+                {}
             )
             """
             try:
-                project_result = session.run(project_query)
-                record = project_result.single()
+                project_result = await session.run(project_query)
+                record = await project_result.single()
                 if record and record["graphName"]:
                     logger.info(f"[성공] 가상 그래프 '{record['graphName']}' OOM 우회 빌드 성공!")
             except Exception as e:
                 logger.error(f"\n[빌드 실패] 메모리 에러: {e}\n")
                 raise e
             
-    def get_optimal_path1(self, start_id, end_id, current_time=None, blocked_ids=[]):
+    async def get_optimal_path1(self, start_id, end_id, current_time=None, blocked_ids=[]):
         if not current_time:
             now = datetime.datetime.now()
             hour = now.hour
@@ -205,7 +227,6 @@ class TransportApp:
             current_time = f"{str(hour).zfill(2)}:{str(minute).zfill(2)}"
         if not blocked_ids: blocked_ids = []
         
-        # 버스와 지하철의 ID 체계 차이로 인한 레코드 증발 버그를 완벽히 튜닝한 최종 쿼리
         cypher_query = """
         MATCH (start:Station {node_id: $start_id, is_master: true})  
         MATCH (end:Station {node_id: $end_id, is_master: true})    
@@ -298,14 +319,14 @@ class TransportApp:
         ORDER BY totalCost ASC
         """
         try:
-            with self.driver.session(database="neo4j") as session:
-                result = session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time)
-                return [dict(record) for record in result]
+            async with self.driver.session(database="neo4j") as session:
+                result = await session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time)
+                return [dict(record) for record in [r async for r in result]]
         except Exception as e:
-            logger.error(f"Neo4j 쿼리 1 실행 에러: {e}")
+            print(f"❌ Neo4j 쿼리 1 실행 에러: {e}")
             return []
         
-    def get_optimal_path2(self, start_id, end_id, current_time=None, blocked_ids=[]):
+    async def get_optimal_path2(self, start_id, end_id, current_time=None, blocked_ids=[]):
         cypher_query = """
         MATCH (start:Station {node_id: $start_id, is_master: true})  
         MATCH (end:Station {node_id: $end_id, is_master: true})    
@@ -399,14 +420,14 @@ class TransportApp:
         ORDER BY totalCost ASC
         """
         try:
-            with self.driver.session(database="neo4j") as session:
-                result = session.run(cypher_query, start_id=start_id, end_id=end_id, blocked_ids=blocked_ids)
-                return [dict(record) for record in result]
+            async with self.driver.session(database="neo4j") as session:
+                result = await session.run(cypher_query, start_id=start_id, end_id=end_id, blocked_ids=blocked_ids)
+                return [dict(record) for record in [r async for r in result]]
         except Exception as e:
-            logger.error(f"Neo4j 쿼리 2 실행 에러: {e}")
+            print(f"❌ Neo4j 쿼리 2 실행 에러: {e}")
             return []
         
-    def get_optimal_path3(self, start_id, end_id, current_time=None, blocked_ids=[]):
+    async def get_optimal_path3(self, start_id, end_id, current_time=None, blocked_ids=[]):
         if not current_time:
             now = datetime.datetime.now()
             hour = now.hour
@@ -509,11 +530,11 @@ class TransportApp:
         ORDER BY totalCost ASC
         """
         try:
-            with self.driver.session(database="neo4j") as session:
-                result = session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time, blocked_ids=blocked_ids)
-                return [dict(record) for record in result]
+            async with self.driver.session(database="neo4j") as session:
+                result = await session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time, blocked_ids=blocked_ids)
+                return [dict(record) for record in [r async for r in result]]
         except Exception as e:
-            logger.error(f"Neo4j 쿼리 3 실행 에러: {e}")
+            print(f"❌ Neo4j 쿼리 3 실행 에러: {e}")
             return []
     
     def format_perfect_routing_paths(self, records):

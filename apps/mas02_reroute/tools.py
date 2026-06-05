@@ -62,7 +62,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
     redis_client = config.redis_client
     user_latest_keys = {}
 
-    match_pattern = "routine:route:xy:user:*"
+    match_pattern = "routine:live:xy:user:*"
     
     keys = await redis_client.keys(match_pattern)
     
@@ -71,15 +71,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
     if keys:
         for key in keys:
             tokens = key.split(":")  # ['routine', 'route', 'xy', 'user', '2', '3']
-            if len(tokens) < 6: 
-                continue
-            
             user_id = tokens[4]   # "2"
-            seq_num = int(tokens[5]) # 3
-            
-            # 유저 ID별로 가장 최신(가장 높은) seq_num을 가진 키만 바인딩
-            if user_id not in user_latest_keys or seq_num > user_latest_keys[user_id]["seq"]:
-                user_latest_keys[user_id] = {"key": key, "seq": seq_num}
                 
     logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명")
 
@@ -88,7 +80,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
 
     for user_id, info in user_latest_keys.items():
         # 🎯 [치트키 방어막 1] 이 유저가 이번 사고(incident_id)로 이미 우회로를 안내받았는지 Redis 이력 확인
-        reroute_history_key = f"user:{user_id}:rerouted:{incident_id}"
+        reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
         is_already_rerouted = await redis_client.exists(reroute_history_key)
         
         if is_already_rerouted:

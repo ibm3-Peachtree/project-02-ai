@@ -25,7 +25,6 @@ async def test() :
 
 @router.get("/live_reroute")
 async def live_reroute(user_id) :
-    redis_client = config.redis_client
     user_key = f"routine:live:incident:full:{user_id}"
     
     data = await config.redis_client.get(user_key)
@@ -33,4 +32,10 @@ async def live_reroute(user_id) :
     logger.info(f"[routers/router.py ] 데이터 조회 (Key: {user_key})")
     
     return data
+
+@router.get("/summarize_topis")
+async def summarize_topis(user_id) :
+    user_key = f"incident:어쩌구:저쩌구:{user_id}"
     
+    data = await config.redis_client.get(user_key)
+    pass
