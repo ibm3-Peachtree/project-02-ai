@@ -1,8 +1,8 @@
-import os
-import json
+# apps/mas02_reroute/rerouting.py
 import time
 import datetime
 from collections import defaultdict
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 # 프로젝트 전역 DB 클라이언트를 가져옵니다.
@@ -218,14 +218,10 @@ class TransportApp:
                 logger.error(f"\n[빌드 실패] 메모리 에러: {e}\n")
                 raise e
             
-    async def get_optimal_path1(self, start_id, end_id, current_time=None, blocked_ids=[]):
-        if not current_time:
-            now = datetime.datetime.now()
-            hour = now.hour
-            minute = now.minute
-            if 0 <= hour <= 3: hour += 24
-            current_time = f"{str(hour).zfill(2)}:{str(minute).zfill(2)}"
-        if not blocked_ids: blocked_ids = []
+    async def get_optimal_path1(self, start_id, end_id):
+        now = datetime.datetime.now(ZoneInfo("Asia/Seoul"))
+        current_time = now.strftime("%H:%M")
+        
         
         cypher_query = """
         MATCH (start:Station {node_id: $start_id, is_master: true})  
@@ -343,7 +339,10 @@ class TransportApp:
             print(f"❌ Neo4j 쿼리 1 실행 에러: {e}")
             return []
         
-    async def get_optimal_path2(self, start_id, end_id, current_time=None, blocked_ids=[]):
+    async def get_optimal_path2(self, start_id, end_id):
+        now = datetime.datetime.now(ZoneInfo("Asia/Seoul"))
+        current_time = now.strftime("%H:%M")
+        
         cypher_query = """
         MATCH (start:Station {node_id: $start_id, is_master: true})  
         MATCH (end:Station {node_id: $end_id, is_master: true})    
@@ -353,8 +352,8 @@ class TransportApp:
         })
         YIELD index, nodeIds, totalCost
 
+        // 🎯 [보정] blocked_ids 검증 조건절(WHERE NONE)을 완벽하게 걷어내고 곧바로 복원 레이어로 통과시킵니다.
         WITH index AS raw_idx, [nodeId IN nodeIds | gds.util.asNode(nodeId)] AS finalNodes, totalCost
-        WHERE NONE(node IN finalNodes WHERE node.node_id IN $blocked_ids)
         WITH finalNodes, totalCost
 
         WITH finalNodes, totalCost, [i IN range(0, size(finalNodes)-2) | finalNodes[i].node_id + "->" + finalNodes[i+1].node_id] AS pathLinks
@@ -455,21 +454,16 @@ class TransportApp:
         """
         try:
             async with self.driver.session(database="neo4j") as session:
-                result = await session.run(cypher_query, start_id=start_id, end_id=end_id, blocked_ids=blocked_ids)
+                result = await session.run(cypher_query, start_id=start_id, end_id=end_id)
                 return [dict(record) for record in [r async for r in result]]
         except Exception as e:
             print(f"❌ Neo4j 쿼리 2 실행 에러: {e}")
             return []
         
-    async def get_optimal_path3(self, start_id, end_id, current_time=None, blocked_ids=[]):
-        if not current_time:
-            now = datetime.datetime.now()
-            hour = now.hour
-            minute = now.minute
-            if 0 <= hour <= 3: hour += 24
-            current_time = f"{str(hour).zfill(2)}:{str(minute).zfill(2)}"
-        if not blocked_ids: blocked_ids = []
-
+    async def get_optimal_path3(self, start_id, end_id):
+        now = datetime.datetime.now(ZoneInfo("Asia/Seoul"))
+        current_time = now.strftime("%H:%M")
+    
         cypher_query = """
         MATCH (start:Station {node_id: $start_id, is_master: true})  
         MATCH (end:Station {node_id: $end_id, is_master: true})    
@@ -480,8 +474,8 @@ class TransportApp:
         })
         YIELD index, nodeIds, totalCost
 
+        // 🎯 [보정] 3번 버스 최적화망 쿼리에서도 blocked_ids 필터 라인을 완전 격리 삭제하고 주행 주석 교체
         WITH index AS raw_idx, [nodeId IN nodeIds | gds.util.asNode(nodeId)] AS finalNodes, totalCost
-        WHERE NONE(node IN finalNodes WHERE node.node_id IN $blocked_ids)
         WITH finalNodes, totalCost
 
         WITH finalNodes, totalCost, [i IN range(0, size(finalNodes)-2) | finalNodes[i].node_id + "->" + finalNodes[i+1].node_id] AS pathLinks
@@ -521,7 +515,7 @@ class TransportApp:
             WITH rel_type, fs1, fs2, r_node, ns
             WITH rel_type, fs1, fs2, r_node, ns,
                  CASE WHEN rel_type = 'NEXT_STOP' AND fs1.node_id CONTAINS '_' THEN split(fs1.node_id, '_')[0] ELSE null END AS m1_id,
-                 CASE WHEN rel_type = 'NEXT_STOP' AND fs2.node_id CONTAINS '_' THEN split(fs2.node_id, '_')[0] ELSE null END AS m2_id
+                 CASE WHEN rel_type = 'NEXT_STOP' AND fs2.node_id CONTAINS '_' THEN split(fs2.node_id, '_')[1] ELSE null END AS m2_id
             
             OPTIONAL MATCH (m1:Station {node_id: m1_id, is_master: true})
             OPTIONAL MATCH (m2:Station {node_id: m2_id, is_master: true})
@@ -582,7 +576,7 @@ class TransportApp:
         """
         try:
             async with self.driver.session(database="neo4j") as session:
-                result = await session.run(cypher_query, start_id=start_id, end_id=end_id, current_time=current_time, blocked_ids=blocked_ids)
+                result = await session.run(cypher_query, start_id=start_id, end_id=end_id)
                 return [dict(record) for record in [r async for r in result]]
         except Exception as e:
             print(f"❌ Neo4j 쿼리 3 실행 에러: {e}")

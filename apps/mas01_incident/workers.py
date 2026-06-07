@@ -18,7 +18,7 @@ SEOUL_GUS = [
     "성북구", "송파구", "양천구", "영등포구", "용산구", "은평구", "종로구", "중구", "중랑구"
 ]
 
-async def redis_topis_listener() :
+async def redis_topis_listener():
     """
     [Worker 1] 실시간 좌표 기반 Redis 스트림을 감시하는 백그라운드 태스크
     """
@@ -26,48 +26,45 @@ async def redis_topis_listener() :
     CONSUMER_NAME = "mas01_worker_stream"
     
     redis_client = config.redis_client
-    # while redis_client is None:
-    #     logger.info("[MAS01 Worker 1] Redis 클라이언트가 준비되기를 기다리는 중...")
-    #     await asyncio.sleep(1)
     
-    while True :
-        try :
-            # 1. 현재 날짜를 기반으로 오늘 생성되어야 할 구별 스트림 키 목록 정의
-            # 형식 예시: incident:서울특별시:강남구:20260526:stream
+    # 🎯 [보정 1] 컨슈머 그룹 초기화 및 최초 생성은 루프 '외부'에서 단 한 번만 실행합니다.
+    logger.info("♻️ [MAS01 Worker 1] [최초 1회 인프라 셋업] 컨슈머 그룹 초기화를 시작합니다...")
+    
+    kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
+    today_str = kst_now.strftime("%Y%m%d")
+    
+    # 현재 테스트 타겟 스트림 (서빙 전환 시 SEOUL_GUS 확장 가능)
+    stream_keys = [f"incident:서울특별시:중구:{today_str}:stream"]
+    
+    for stream_key in stream_keys:
+        try:
+            await redis_client.xgroup_destroy(stream_key, GROUP_NAME)
+            logger.info(f"🗑️ 기존 그룹 삭제 완료: {stream_key}")
+        except Exception:
+            pass
+            
+    for stream_key in stream_keys:
+        try:
+            # mkstream=True로 스트림 뼈대와 컨슈머 그룹을 공고히 다집니다.
+            await redis_client.xgroup_create(stream_key, GROUP_NAME, id="0", mkstream=True)
+            logger.info(f"✅ 컨슈머 그룹 생성 완료: {stream_key}")
+        except Exception:
+            pass
+    
+    while True:
+        try:
             kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
             today_str = kst_now.strftime("%Y%m%d")
-            # today_str = "20260520"
-            # stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
-            stream_keys = [f"incident:서울특별시:동작구:{today_str}:stream"]
+            stream_keys = [f"incident:서울특별시:중구:{today_str}:stream"]
             
-            # ####################### 테스트용 (실제에선 지우기) #############################
-            logger.info("♻️ [MAS01 Worker 1] 테스트를 위해 컨슈머 그룹 초기화를 시작합니다...")
-            for stream_key in stream_keys:
-                # 1. 기존에 남아있던 그룹이 있다면 완전 삭제
-                try:
-                    await redis_client.xgroup_destroy(stream_key, GROUP_NAME)
-                    logger.info(f"🗑️ 기존 그룹 삭제 완료: {stream_key}")
-                except Exception:
-                    pass # 삭제할 그룹이 없으면 에러가 나므로 패스
-            
-            # 2. 모든 구의 오늘자 스트림에 대해 컨슈머 그룹이 없다면 생성 (mkstream=True로 스트림 자동 생성 방지 보완)
-            for stream_key in stream_keys:
-                try:
-                    await redis_client.xgroup_create(stream_key, GROUP_NAME, id="0", mkstream=True)
-                except Exception:
-                    pass
-                
-            # 3. 25개 구의 모든 스트림을 동시에 감시하기 위한 딕셔너리 빌드
-            # '>' 의미: 이 컨슈머 그룹 기준, 아직 아무도 읽어가지 않은 새 데이터만 가져오겠다
             streams_dict = {stream_key: ">" for stream_key in stream_keys}
             
-            # 4. 여러 구의 스트림을 동시에 Blocking으로 한 번에 읽기 (최대 10초 블로킹 대기)
-            # 25개 구 중 어느 한 곳이라도 데이터가 들어오면 즉시 반응합니다.
+            # 한 번에 여러 개가 들어와도 유실 없이 처리하기 위해 count를 5~10 정도로 넉넉히 주는 것을 추천합니다.
             response = await redis_client.xreadgroup(
                 groupname=GROUP_NAME,
                 consumername=CONSUMER_NAME,
                 streams=streams_dict,
-                count=1,
+                count=5,
                 block=10000
             )
             
@@ -92,9 +89,8 @@ async def redis_topis_listener() :
                             processed_nodes = final_state.get("affected_nodes", [])
                             logger.info("[Stream Worker : Redis] : Node 처리 완료")
                             
-                            for node in processed_nodes : 
+                            for node in processed_nodes: 
                                 logger.info(f"   📍 장소: {node['affected']} | 좌표: ({node['lat']}, {node['lng']}) | 기간: {node['startDateTime']} ~ {node['endDateTime']}")
-                                # 다음 행동 등 하기
                             
                             await redis_client.xack(stream_key, GROUP_NAME, message_id)
                         
@@ -102,18 +98,14 @@ async def redis_topis_listener() :
                             logger.info(f"[Stream Worker] 중복된 돌발 상황건으로 판명되어 스킵 및 ACK 처리합니다.")
                             await redis_client.xack(stream_key, GROUP_NAME, message_id)
 
-                        # 처리가 성공적으로 끝나면 해당 구 스트림에 ACK 확정 신호를 보냅니다.
-                        # await redis_client.xack(stream_key, GROUP_NAME, message_id)
-
-            # 무한 루프로 인한 CPU 과부하 방지용 미세 휴식
-            await asyncio.sleep(10)
+            await asyncio.sleep(1)
 
         except asyncio.CancelledError:
             logger.info("[MAS01 Worker 1] 서버 정지로 인해 스트림 리스너를 종료합니다.")
             break
         except Exception as e:
             logger.error(f"[MAS01 Worker 1 Error] 에러 발생: {e}")
-            await asyncio.sleep(5)  # 에러 발생 시 일시적인 부하 분산을 위해 대기 후 리트라이
+            await asyncio.sleep(5)
     
 async def mysql_topis_listener() :
     """
@@ -121,17 +113,12 @@ async def mysql_topis_listener() :
     """
     
     mysql_pool = config.mysql_pool
-    # while mysql_pool is None:
-    #     logger.info("[MAS01 Worker 2] MySQL POOL이 준비되기를 기다리는 중...")
-    #     await asyncio.sleep(1)
     
     while True :
         try :
             kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
             current_time = kst_now.strftime("%Y-%m-%d %H:%M:%S")
             date_format = "%Y-%m-%d %H:%M:%S"
-            # current_time = datetime.strptime("2026-05-20 13:00:00", date_format)
-            # current_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
             
             sql = """
                 SELECT * FROM topis_notice 

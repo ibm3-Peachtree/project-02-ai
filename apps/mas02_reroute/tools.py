@@ -103,17 +103,15 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
         user_xy_list = json.loads(raw_data)
         if isinstance(user_xy_list, str):
             user_xy_list = json.loads(user_xy_list)
+        target_nodes = []
+        if isinstance(user_xy_list, dict):
+            target_nodes = user_xy_list.get("routeXYDtoList", [])
+        elif isinstance(user_xy_list, list):
+            target_nodes = user_xy_list
             
         is_user_affected = False
         
-        for node in user_xy_list["routeXYDtoList"]:
-            # if isinstance(node, str):
-            #     node = node.strip()
-            #     if node.startswith('{'):
-            #         node = json.loads(node)
-            #     else:
-            #         continue
-                
+        for node in target_nodes:
             if not node or node.get("x") is None or node.get("y") is None: 
                 continue
                 
@@ -140,6 +138,54 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 
         if is_user_affected:
             affected_user_reco_ids.append(int(user_id))
-            await redis_client.set(name=reroute_history_key, value="DONE", ex=3600)
+        await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
             
     return affected_user_reco_ids, affected_user_xy
+
+async def get_incident_meta_data(incident_id: str ) -> dict:
+    """
+    Redis로부터 특정 사건의 메타(LLM 요약 및 기간) 데이터를 조회하여 
+    파이썬 딕셔너리 객체로 반환합니다.
+    """
+    redis_client = config.redis_client
+    # 🎯 메타 키 조립
+    meta_key = f"incident:meta:{incident_id}"
+    
+    logger.info(f"🔍 [Redis 읽기] 사건 메타 데이터 캐시 스캔 시작: {meta_key}")
+    
+    try:
+        # 1. Redis에서 데이터 읽어오기
+        raw_meta = await redis_client.get(meta_key)
+        
+        # 데이터가 아예 존재하지 않는 경우 (캐시 미스) 빈 딕셔너리 리턴
+        if not raw_meta:
+            logger.warning(f"⚠️ [Redis 캐시 미스] 해당 키의 데이터가 존재하지 않거나 만료되었습니다: {meta_key}")
+            return {}
+            
+        # 2. 바이트 타입일 경우 문자열로 안전하게 디코딩
+        if isinstance(raw_meta, bytes):
+            raw_meta = raw_meta.decode('utf-8')
+            
+        # 3. JSON 문자열을 파이썬 딕셔너리로 원상복구
+        meta_dict = json.loads(raw_meta)
+        
+        # 만약 내부적으로 문자열이 이중 패킹(Stringified)되어 들어갔을 경우를 대비한 2차 해제 방어선
+        if isinstance(meta_dict, str):
+            meta_dict = json.loads(meta_dict)
+            
+        logger.info(f"⚡ [Redis 캐시 적중] 성공적으로 메타 정보를 복원했습니다. (사건 요약: {meta_dict.get('incident', '내용 없음')})")
+        return meta_dict
+
+    except Exception as e:
+        logger.error(f"❌ [Redis 읽기 에러] {meta_key} 데이터 파싱 중 실패: {e}")
+        return {}
+    
+def calculate_distance(lat1, lng1, lat2, lng2):
+    """두 좌표 사이의 직선 거리를 미터(m) 단위로 계산"""
+    R = 6371000.0
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lng2 - lng1)
+    a = (math.sin(delta_phi / 2.0) ** 2 +
+         math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0) ** 2)
+    return R * 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))

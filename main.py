@@ -48,16 +48,13 @@ async def lifespan(app: FastAPI):
     logger.info("=== [System] FastAPI 시작 및 MAS 워커 가동 ===")
     # MAS1 워커 가동 (Redis Stream 구독 시작)
     mas01_task1 = asyncio.create_task(redis_topis_listener())
-    mas01_task2 = asyncio.create_task(mysql_topis_listener())
+    # mas01_task2 = asyncio.create_task(mysql_topis_listener())
     mas02_reroute_task = asyncio.create_task(redis_incident_consumer_and_rerouter())
     cleaner_task = asyncio.create_task(redis_stream_end_time_cleaner())
     
     mas01_task1.add_done_callback(handle_worker_result)
-    mas01_task2.add_done_callback(handle_worker_result)
+    # mas01_task2.add_done_callback(handle_worker_result)
     mas02_reroute_task.add_done_callback(handle_worker_result)
-    
-    # 만약 MAS2가 추가된다면 아래처럼 타스크만 추가해주면 레이어가 분리됩니다.
-    # mas2_task = asyncio.create_task(router_stream_listener())
     
     yield
     
@@ -67,12 +64,12 @@ async def lifespan(app: FastAPI):
     # [Shutdown] 서버가 꺼질 때 백그라운드 워커 안전하게 안전하게 종료
     logger.info("=== [System] FastAPI 종료 및 MAS 워커 정지 ===")
     mas01_task1.cancel()
-    mas01_task2.cancel()
+    # mas01_task2.cancel()
     mas02_reroute_task.cancel()
     cleaner_task.cancel()
     await asyncio.gather(
         mas01_task1, 
-        mas01_task2, 
+        # mas01_task2, 
         cleaner_task, 
         mas02_reroute_task,
         return_exceptions=True
@@ -80,13 +77,11 @@ async def lifespan(app: FastAPI):
     
     try:
         await mas01_task1
-        await mas01_task2
+        # await mas01_task2
         await mas02_reroute_task
         
     except asyncio.CancelledError:
         pass
-
-# app = FastAPI(lifespan=lifespan)
 
 app = FastAPI(
     title="AI Service API",

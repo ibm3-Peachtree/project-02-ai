@@ -2,11 +2,14 @@
 
 import json
 import asyncio
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import config
 from config import logger
 from apps.mas02_reroute.tools import get_affected_coordinates_from_neo4j, get_active_users_by_coordinates
 from apps.mas02_reroute.alert import process_and_save_alerts, summarize_notice
+from apps.mas02_reroute.agents import mas02_agent
 
 SEOUL_GUS = [
     "강남구", "강동구", "강북구", "강서구", "관악구", "광진구", "구로구", "금천구",
@@ -78,9 +81,45 @@ async def redis_incident_consumer_and_rerouter():
                                 result = await summarize_notice(payload)
                                 await process_and_save_alerts(result, affected_user_ids)
                                 
-                                # 여기에 우회경로
-                                
-                                for user_id in affected_user_ids:
+                                for idx, user_id in enumerate(affected_user_ids):
+                                    try :
+                                        initial_state = {
+                                            "incident_id": incident_id,
+                                            "user_id" : user_id,
+                                            "user_live_route_xy" : affected_user_xy[idx]
+                                        }
+                                        final_state = await mas02_agent.ainvoke(initial_state)
+                                        
+                                        processed_nodes = final_state.get("final_rerouting_paths", [])
+                                        key = f"routine:live:incident:full:{user_id}"
+                                        
+                                        if processed_nodes:
+                                            try:    
+                                                # 2. Redis 인메모리 Key-Value 스냅샷 SET 기동
+                                                await redis_client.set(name=key, value=processed_nodes)
+                                                
+                                                # 3. TTL endTime - 현재 시간 해야 함
+                                                end_date_str = payload.get("endDateTime")
+                                                end_time = datetime.strptime(end_date_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Seoul"))
+                                                now_time = datetime.now(ZoneInfo("Asia/Seoul"))
+                                                remaining_time = end_time - now_time
+                                                remaining_seconds = int(remaining_time.total_seconds())
+                                                if remaining_seconds <= 0:
+                                                    remaining_seconds = 3600
+                                                    
+                                                await redis_client.expire(key, remaining_seconds)
+
+                                                logger.info(f"[MAS02 workers.py Redis Sync] 유저 {user_id}의 실시간 복합 사고 노드 {len(processed_nodes)}건 적재 완료.")
+                                                
+                                            except Exception as redis_err:
+                                                logger.error(f"[MAS02 workers.py Redis Error] 유저 {user_id} 사고 데이터 캐싱 중 실패: {redis_err}")
+                                        else:
+                                            logger.warning(f"[MAS02 workers.py] 유저 {user_id}에게 매핑된 최종 사고 노드가 없어 Redis 저장을 생략합니다.")
+                                        
+                                    except Exception as e :
+                                        logger.error(f"[MAS02 workers.py redis_incident_consumer_and_rerouter] {e}")
+                                        continue
+                                    
                                     reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
                                     await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
                                     logger.info(f"[MAS02 workers][History Mark] 유저 {user_id} 우회 플래그 캐싱 완료.")
@@ -130,7 +169,45 @@ async def redis_incident_consumer_and_rerouter():
                                     # 공통 알림 발송 기동!
                                     await process_and_save_alerts(result, affected_user_ids)
                                  
-                                    for user_id in affected_user_ids:
+                                    for idx, user_id in enumerate(affected_user_ids):
+                                        try :
+                                            initial_state = {
+                                                "incident_id": incident_id,
+                                                "user_id" : user_id,
+                                                "user_live_route_xy" : affected_user_xy[idx]
+                                            }
+                                            final_state = await mas02_agent.ainvoke(initial_state)
+                                            
+                                            processed_nodes = final_state.get("final_rerouting_paths", [])
+                                            key = f"routine:live:incident:full:{user_id}"
+                                            
+                                            if processed_nodes:
+                                                try:    
+                                                    # 2. Redis 인메모리 Key-Value 스냅샷 SET 기동
+                                                    await redis_client.set(name=key, value=processed_nodes)
+                                                    
+                                                    # 3. TTL endTime - 현재 시간 해야 함
+                                                    end_date_str = payload.get("endDateTime")
+                                                    end_time = datetime.strptime(end_date_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Seoul"))
+                                                    now_time = datetime.now(ZoneInfo("Asia/Seoul"))
+                                                    remaining_time = end_time - now_time
+                                                    remaining_seconds = int(remaining_time.total_seconds())
+                                                    if remaining_seconds <= 0:
+                                                        remaining_seconds = 3600
+                                                        
+                                                    await redis_client.expire(key, remaining_seconds)
+
+                                                    logger.info(f"[MAS02 workers.py Redis Sync] 유저 {user_id}의 실시간 복합 사고 노드 {len(processed_nodes)}건 적재 완료.")
+                                                    
+                                                except Exception as redis_err:
+                                                    logger.error(f"[MAS02 workers.py Redis Error] 유저 {user_id} 사고 데이터 캐싱 중 실패: {redis_err}")
+                                            else:
+                                                logger.warning(f"[MAS02 workers.py] 유저 {user_id}에게 매핑된 최종 사고 노드가 없어 Redis 저장을 생략합니다.")
+                                            
+                                        except Exception as e :
+                                            logger.error(f"[MAS02 workers.py redis_incident_consumer_and_rerouter] {e}")
+                                            continue
+                                    
                                         reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
                                         await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
                                         logger.info(f"[MAS02 workers][History Mark] 유저 {user_id} 우회 플래그 캐싱 완료.")
