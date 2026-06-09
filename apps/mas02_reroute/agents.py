@@ -10,7 +10,7 @@ from langgraph.graph import StateGraph, END
 import config
 from config import logger
 from apps.mas02_reroute.rerouting import TransportApp
-from apps.mas02_reroute.tools import get_incident_meta_data, calculate_distance
+from apps.mas02_reroute.tools import get_incident_meta_data, calculate_distance, total_cost
 
 class ReroutingAgentState(TypedDict) :
     incident_id : str # 필요한가?
@@ -170,18 +170,16 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
         line_name = raw_no.split(":")[1].strip() if ":" in raw_no else raw_no
         line_name = line_name.split(' ')[1]
         
-        # 1. 먼저 호선 정보(route_id)가 명확히 살아있는 하위 노드(is_master: false)를 타겟팅합니다.
-        # 2. 하위 노드의 node_id(예: "1907_1호선") 앞부분을 잘라내어 마스터의 station_cd(예: "1907")와 매칭합니다.
-        # 3. 이로써 환승역이더라도 LLM이 지정한 '호선'에 속한 정확한 역의 마스터 node_id를 보장합니다.
+        # 1. 먼저 호선 정보(route_id)가 명확히 살아있는 하위 노드(is_master: false)를 타겟팅.
+        # 2. 하위 노드의 node_id(예: "1907_1호선") 앞부분을 잘라내어 마스터의 station_cd(예: "1907")와 매칭.
+        # 3. 이로써 환승역이더라도 LLM이 지정한 '호선'에 속한 정확한 역의 마스터 node_id 보장.
         query = """
             MATCH (sub:Station {is_master: false, type: "SUBWAY"})
             WHERE (sub.name CONTAINS $name) 
               AND (sub.route_id = $line_name OR sub.name CONTAINS $line_name)
             
-            # 하위 노드의 node_id가 "1907_1호선" 형태이므로 split하여 "1907" 추출
             WITH split(sub.node_id, "_")[0] AS target_cd
             
-            # 추출한 코드를 가진 실제 마스터 노드를 단 한 건 매칭
             MATCH (m:Station {is_master: true, type: "SUBWAY", station_cd: target_cd})
             RETURN m.node_id AS node_id LIMIT 1
         """
@@ -208,13 +206,13 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
     else: 
         start_node_id = await get_subway_node_id(start_node)
     
-    # 🎯 종료 노드 (End Node) ID 추출 분기
+    # 종료 노드 (End Node) ID 추출 분기
     if end_node.get("arsID") and str(end_node.get("arsID")).lower() != "null":
         end_node_id = await get_bus_node_id(end_node)
     else: 
         end_node_id = await get_subway_node_id(end_node)
     
-    logger.info(f"🎯 [MAS02 agents.py resolve_neo4j_node_ids ID 매핑 완료] 시작 ID: {start_node_id} / 종료 ID: {end_node_id}")
+    logger.info(f"[MAS02 agents.py resolve_neo4j_node_ids ID 매핑 완료] 시작 ID: {start_node_id} / 종료 ID: {end_node_id}")
     
     return {
         "resolved_node_ids": {
@@ -223,17 +221,18 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
         }
     }
     
-async def generate_and_format_routes(state: ReroutingAgentState) -> Dict[str, Any]:
+async def generate_and_format_routes(state: ReroutingAgentState) -> List[Dict[str, Any]]:
     nodes = state.get("resolved_node_ids")
     start_node = nodes.get("start_node_id")
     end_node = nodes.get("end_node_id")
     
-    app = TransportApp()
+    # app = TransportApp()
+    app = config.app
     
-    await app.delete_gds_graph()
-    await app.build_gds_graph1()
-    await app.build_gds_graph2()
-    await app.build_gds_graph3()
+    # await app.delete_gds_graph()
+    # await app.build_gds_graph1()
+    # await app.build_gds_graph2()
+    # await app.build_gds_graph3()
     
     combined_records = []
     path_counter = 0
@@ -251,16 +250,24 @@ async def generate_and_format_routes(state: ReroutingAgentState) -> Dict[str, An
     for r in query_3_result:
         r['path_idx'] = path_counter; combined_records.append(r); path_counter += 1
         
-    logger.info(f"📦 독립 3-Query 최적 원본 레코드 취합 완료 (총 후보군: {len(combined_records)})") 
+    logger.info(f"독립 3-Query 최적 원본 레코드 취합 완료 (총 후보군: {len(combined_records)})") 
     
     # format_perfect_routing_paths는 순수 연산 함수(동기식)이므로 기존 구조 유지
     final_routes = app.format_perfect_routing_paths(combined_records)
     
-    logger.info("\n================= 🗺️ 최종 요구사항 만족 취합 대안 경로 출력 =================")
-    final_routes = json.dumps(final_routes, ensure_ascii=False, indent=2)
+    logger.info(f"[MAS02 routes 1]\n {final_routes}")
+    
     
     return {
         "final_rerouting_paths" : final_routes
+    }
+    
+async def generate_total_cost(state: ReroutingAgentState) -> List[Dict[str, Any]] :
+    routes = state.get("final_rerouting_paths")
+    routes = await total_cost(routes)
+    routes = json.dumps(routes, ensure_ascii=False, indent=2)
+    return {
+        "final_rerouting_paths" : routes
     }
     
 mas02_workflow = StateGraph(ReroutingAgentState)
@@ -269,11 +276,13 @@ mas02_workflow.add_node('fetch_user_realtime_context', fetch_user_realtime_conte
 mas02_workflow.add_node('extract_routing_station_names', extract_routing_station_names)
 mas02_workflow.add_node('resolve_neo4j_node_ids', resolve_neo4j_node_ids)
 mas02_workflow.add_node('generate_and_format_routes', generate_and_format_routes)
+mas02_workflow.add_node('generate_total_cost', generate_total_cost)
 
 mas02_workflow.set_entry_point('fetch_user_realtime_context')
 mas02_workflow.add_edge('fetch_user_realtime_context', 'extract_routing_station_names')
 mas02_workflow.add_edge('extract_routing_station_names', 'resolve_neo4j_node_ids')
 mas02_workflow.add_edge('resolve_neo4j_node_ids', 'generate_and_format_routes')
-mas02_workflow.add_edge('generate_and_format_routes', END)
+mas02_workflow.add_edge('generate_and_format_routes', 'generate_total_cost')
+mas02_workflow.add_edge('generate_total_cost', END)
 
 mas02_agent = mas02_workflow.compile()

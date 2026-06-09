@@ -113,25 +113,46 @@ async def resolve_linear_reference(road_name, anchor_node, offset_start, offset_
         return {"lat": lat, "lng": lng, "si": si, "gu": gu}
     return None
 
-def resolve_between_nodes(road_name: Optional[str], start_node: str, end_node: str) -> Optional[Dict[str, Any]]:
+async def resolve_between_nodes(road_name: Optional[str], start_node: str, end_node: str) -> Optional[Dict[str, Any]]:
     node_gdf = config.NODE_GDF
     node_col = 'NODE_NAME' if 'NODE_NAME' in node_gdf.columns else 'NODE_NM'
     
     s_match = node_gdf[node_gdf[node_col].str.contains(start_node, na=False)]
     e_match = node_gdf[node_gdf[node_col].str.contains(end_node, na=False)]
     
+    # 케이스 1: SHP 노드 데이터에 둘 다 온전하게 매칭되는 정석적인 경우
     if not s_match.empty and not e_match.empty:
-        # 💡 시작 노드를 기준으로 행정구역 정보 획득
         si, gu = get_si_gu_from_row(s_match.iloc[0])
-        
         s_lat, s_lng = to_wgs84(s_match.iloc[0].geometry)
         e_lat, e_lng = to_wgs84(e_match.iloc[0].geometry)
         return {"lat": (s_lat + e_lat) / 2, "lng": (s_lng + e_lng) / 2, "si": si, "gu": gu}
     
-    elif not s_match.empty:
+    # 케이스 2: 시작 노드만 SHP에 매칭되는 경우
+    elif not s_match.empty and e_match.empty:
         si, gu = get_si_gu_from_row(s_match.iloc[0])
         lat, lng = to_wgs84(s_match.iloc[0].geometry)
         return {"lat": lat, "lng": lng, "si": si, "gu": gu}
+    
+    # 🎯 [결정적 보정] GeoDataFrame 객체의 공백 유무 검증은 무조건 '.empty'를 붙여야 안 터집니다.
+    # SHP DB에 노드가 없어서 비어있다면(.empty가 True라면) 카카오 키워드 검색 백업 가동!
+    if s_match.empty:
+        si, gu, s_lat, s_lng = await kakao_keyword_to_latlng(start_node)
+    else:
+        si, gu = get_si_gu_from_row(s_match.iloc[0])
+        s_lat, s_lng = to_wgs84(s_match.iloc[0].geometry)
+        
+    if e_match.empty:
+        si, gu, e_lat, e_lng = await kakao_keyword_to_latlng(end_node)
+    else:
+        si, gu = get_si_gu_from_row(e_match.iloc[0])
+        e_lat, e_lng = to_wgs84(e_match.iloc[0].geometry)
+        
+    # 둘 다 정상적으로 위경도 좌표(SHP 또는 Kakao)가 확보 완료되었다면 중심점 반환
+    if s_lat and e_lat:
+        return {"lat": (float(s_lat) + float(e_lat)) / 2, "lng": (float(s_lng) + float(e_lng)) / 2, "si": si, "gu": gu}
+    elif s_lat:
+        return {"lat": float(s_lat), "lng": float(s_lng), "si": si, "gu": gu}
+        
     return None
 
 async def resolve_address_point(address:str) -> Optional[Dict[str, Any]] :
@@ -184,6 +205,49 @@ async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
     await config.redis_client.xadd(name=stream_key, fields=flat_data)
 
 # @tool
+async def kakao_keyword_to_latlng(keyword) :
+    """
+    입력 : 키워드
+    출력 : x, y (위도, 경도)
+    """
+    
+    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+    headers = {
+        "Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"
+    }
+    params = {
+        "query" : keyword
+    }
+    
+    try : 
+        response = requests.get(url, headers=headers, params=params)
+        
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        output = None
+        for doro in data['documents'] :
+            if '교통,수송' in doro['category_name'] :
+                output = doro
+                break
+            elif doro['place_name'] == ''.join(keyword.split(' ')) :
+                output = doro
+                break
+        address = output['address_name'].split(' ')
+        si = address[0]
+        gu = address[1]
+        return (si, gu, output['y'], output['x'])
+    
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP 에러 발생: {e}")
+        return None
+    
+    except Exception as e:
+        print(f"기타 에러 발생: {e}")
+        return None
+
+# @tool
 # async def get_seoul_roadname_latlng(roadname) :
 #     """
 #     입력 : 도로 이름 (예 : 올림픽대로)
@@ -208,36 +272,5 @@ async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
 #         print(f"기타 에러 발생: {e}")
 #         return None
     
-
-# @tool
-# async def kakao_address_to_latlng(address) :
-#     """
-#     입력 : 주소
-#     출력 : x, y (위도, 경도)
-#     """
-    
-#     url = "https://dapi.kakao.com/v2/local/search/address.json"
-#     headers = {
-#         "Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"
-#     }
-#     params = {
-#         "query" : address
-#     }
-    
-#     try : 
-#         response = requests.get(url, headers=headers, params=params)
-        
-#         response.raise_for_status()
-        
-#         data = response.json()
-        
-#     except requests.exceptions.HTTPError as e:
-#         print(f"HTTP 에러 발생: {e}")
-#         return None
-#     except Exception as e:
-#         print(f"기타 에러 발생: {e}")
-#         return None
-
-# mas01_node2_tools = [kakao_address_to_latlng, get_seoul_roadname_latlng]
 
 

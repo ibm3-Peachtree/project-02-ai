@@ -10,6 +10,8 @@ from neo4j import AsyncGraphDatabase
 import aiomysql
 import geopandas as gpd
 
+from apps.mas02_reroute.rerouting import TransportApp
+
 load_dotenv()
 
 logger = logging.getLogger("uvicorn")
@@ -58,6 +60,7 @@ mysql_pool = None
 SHP_DIR = os.path.join(os.path.dirname(__file__), "[2026-01-13]NODELINKDATA")
 LINK_GDF = None
 NODE_GDF = None
+app = None
 
 async def init_gdf() :
     global LINK_GDF, NODE_GDF
@@ -123,6 +126,15 @@ async def init_db_connections():
         auth=("neo4j", NEO4J_PASSWORD)
     )
     logger.info("config.init_db_connections : 4 터널 바인딩 완료: Neo4j 드라이버")
+    
+    app = TransportApp()
+    
+    await app.delete_gds_graph()
+    await app.build_gds_graph1()
+    await app.build_gds_graph2()
+    await app.build_gds_graph3()
+    
+    logger.info("config.init_db_connections : Neo4j GDS graph 초기화")
     
     local_mysql_port = ssh_tunnel_mysql.local_bind_port
     mysql_pool = await aiomysql.create_pool(

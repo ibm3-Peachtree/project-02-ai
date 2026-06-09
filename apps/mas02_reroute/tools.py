@@ -32,8 +32,8 @@ async def get_affected_coordinates_from_neo4j(incident_id: str) -> list:
     물리 마스터 노드의 x(경도), y(위도) 좌표 리스트를 반환합니다.
     """
     # 가상 플랫폼과 물리 마스터 정류소 간의 관계(예: MATCH 등)를 기반으로 
-    # 마스터 노드의 x, y 좌표를 Distinct하게 긁어옵니다.
-    # (만약 스키마 상 가상 노드가 마스터 ID를 접두사로 가지므로 ID 기반 매칭도 가능합니다)
+    # 마스터 노드의 x, y 좌표를 Distinct하게 받음
+    # (만약 스키마 상 가상 노드가 마스터 ID를 접두사로 가지므로 ID 기반 매칭도 가능)
     neo4j_query = """
         MATCH (virtual:Station {is_master: false})-[:AFFECTED_BY]->(i:Incident {id: $incident_id})
         // 🎯 1. ID 문자열을 '_' 기준으로 쪼개서 [0]번째(앞자리)만 가공합니다.
@@ -76,7 +76,6 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 
     logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명")
 
-    # 🎯 affected_coords는 완벽한 파이썬 list이므로 전처리 불필요! 일체 터치하지 않습니다.
     affected_user_reco_ids = []
     affected_user_xy = []
 
@@ -93,8 +92,6 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
         if isinstance(raw_data, bytes):
             raw_data = raw_data.decode('utf-8')
             
-        # [결정적 보정] Redis 내부 값이 비어있거나 JSON 형태( [, { )가 아니면 
-        # json.loads를 타지 않고 영리하게 스킵하여 DecodeError를 완벽 차단합니다.
         raw_data = raw_data.strip()
         if not raw_data or not raw_data.startswith(('[', '{')):
             logger.warning(f"⚠️ 유저 {user_id}의 Redis 데이터가 올바른 JSON 포맷이 아닙니다. 스킵합니다.")
@@ -103,6 +100,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
         user_xy_list = json.loads(raw_data)
         if isinstance(user_xy_list, str):
             user_xy_list = json.loads(user_xy_list)
+            
         target_nodes = []
         if isinstance(user_xy_list, dict):
             target_nodes = user_xy_list.get("routeXYDtoList", [])
@@ -119,7 +117,6 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
             u_lat = float(node.get("y"))
             
             for aff_coord in affected_coords:
-                # 🎯 affected_coords 내부 요소 역시 순수 dict이므로 변환 없이 직통 매핑!
                 if not aff_coord or aff_coord.get("x") is None or aff_coord.get("y") is None: 
                     continue
                     
@@ -130,7 +127,10 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 
                 if actual_distance <= 50.0:
                     is_user_affected = True
-                    affected_user_xy.append(user_xy_list['routeXYDtoList'])
+                    
+                    # 💡 [보정] 자료형에 상관없이 안전하게 추출된 노드 리스트(또는 원본 리스트)를 append 합니다.
+                    affected_user_xy.append(target_nodes)
+                    
                     logger.warning(f"[MAS02 tools.py get_active_users_by_coordinates][신규 난입 포착] 유저 {user_id}번이 통제 구역 {actual_distance:.2f}m 거리에 진입!")
                     break 
                     
@@ -138,7 +138,8 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 
         if is_user_affected:
             affected_user_reco_ids.append(int(user_id))
-        await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
+            # 우회 플래그 캐싱은 실제 영향을 받은 유저(is_user_affected == True)일 때만 마킹되도록 if문 내부로 이동했습니다.
+            await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
             
     return affected_user_reco_ids, affected_user_xy
 
@@ -148,7 +149,7 @@ async def get_incident_meta_data(incident_id: str ) -> dict:
     파이썬 딕셔너리 객체로 반환합니다.
     """
     redis_client = config.redis_client
-    # 🎯 메타 키 조립
+
     meta_key = f"incident:meta:{incident_id}"
     
     logger.info(f"🔍 [Redis 읽기] 사건 메타 데이터 캐시 스캔 시작: {meta_key}")
@@ -189,3 +190,48 @@ def calculate_distance(lat1, lng1, lat2, lng2):
     a = (math.sin(delta_phi / 2.0) ** 2 +
          math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2.0) ** 2)
     return R * 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
+
+async def total_cost(final_routes_path):
+    logger.info(f"MAS02 tools.py total cost 진입")
+    for idx, route in enumerate(final_routes_path):
+        total_distance = 0
+        max_base_fare = 0
+        
+        # 현재 경로의 모든 세그먼트를 돌며 거리 합산 및 기본요금 후보 추출
+        for path_segment in route["path_segments"]:
+            if path_segment["type"] == "TRANSIT":
+                total_distance += path_segment["total_distance_m"]
+                
+                # display_name 분석하여 기본요금 한도 설정
+                display_name = "".join(path_segment.get("display_name", []))
+                
+                if "마을버스" in display_name:
+                    current_base = 1200
+                elif "광역" in display_name or "직행좌석" in display_name:
+                    current_base = 3000
+                elif "지하철" in display_name or "전철" in display_name or "호선" in display_name:
+                    current_base = 1550  # 지하철이 섞이면 베이스는 1,550원
+                else:
+                    current_base = 1500  # 일반 시내버스 기본요금
+                
+                if current_base > max_base_fare:
+                    max_base_fare = current_base
+        
+        if max_base_fare == 0:
+            route["cost"] = 0
+            continue
+        
+        final_fare = max_base_fare
+        
+        if total_distance > 10000:
+            # 10km를 초과한 순수 초과 거리 계산
+            excess_distance = total_distance - 10000
+            
+            # 5km(5,000m) 마다 100원씩 올림(math.ceil)하여 추가 요금 계산
+            extra_fare = math.ceil(excess_distance / 5000) * 100
+            final_fare += extra_fare
+            
+        route["cost"] = final_fare
+    logger.info(f"MAS02 tools.py total cost 완료")
+        
+    return final_routes_path

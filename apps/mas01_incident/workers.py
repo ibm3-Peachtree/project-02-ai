@@ -27,14 +27,15 @@ async def redis_topis_listener():
     
     redis_client = config.redis_client
     
-    # 🎯 [보정 1] 컨슈머 그룹 초기화 및 최초 생성은 루프 '외부'에서 단 한 번만 실행합니다.
+    # 컨슈머 그룹 초기화 및 최초 생성은 루프 '외부'에서 단 한 번만 실행
     logger.info("♻️ [MAS01 Worker 1] [최초 1회 인프라 셋업] 컨슈머 그룹 초기화를 시작합니다...")
     
     kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
     today_str = kst_now.strftime("%Y%m%d")
     
     # 현재 테스트 타겟 스트림 (서빙 전환 시 SEOUL_GUS 확장 가능)
-    stream_keys = [f"incident:서울특별시:중구:{today_str}:stream"]
+    # stream_keys = [f"incident:서울특별시:중구:{today_str}:stream"]
+    stream_keys = [f"incident:서울특별시:{gu}:{today_str}.stream" for gu in SEOUL_GUS]
     
     for stream_key in stream_keys:
         try:
@@ -53,10 +54,6 @@ async def redis_topis_listener():
     
     while True:
         try:
-            kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
-            today_str = kst_now.strftime("%Y%m%d")
-            stream_keys = [f"incident:서울특별시:중구:{today_str}:stream"]
-            
             streams_dict = {stream_key: ">" for stream_key in stream_keys}
             
             # 한 번에 여러 개가 들어와도 유실 없이 처리하기 위해 count를 5~10 정도로 넉넉히 주는 것을 추천합니다.
@@ -77,7 +74,7 @@ async def redis_topis_listener():
                             logger.warning(f"[Stream Worker] {stream_key}에 유효한 돌발 정보가 없습니다.")
                             continue
                         
-                        # 1단계: 중복 검증
+                        # 중복 검증
                         is_new = await check_duplicate(incident_data, "redis")
                         
                         if is_new:
@@ -146,7 +143,7 @@ async def mysql_topis_listener() :
                         logger.info(f"장소: {node['affected']} | 좌표: ({node['lat']}, {node['lng']}) | 기간: {node['startDateTime']} ~ {node['endDateTime']}")
                         # 다음 행동 등 하기
 
-            await asyncio.sleep(3600)
+                await asyncio.sleep(60)
         
         except asyncio.CancelledError:
             logger.info("[MAS01 Worker 2] 서버 정지로 인해 스트림 리스너를 종료합니다.")
@@ -165,7 +162,7 @@ async def redis_stream_end_time_cleaner():
     """
     redis_client = config.redis_client
     
-    # 특정 ID DETACH DELETE를 수행하면 물려있던 가상 플랫폼간의 :AFFECTED_BY 관계도 자동 삭제됩니다.
+    # 특정 ID DETACH DELETE를 수행하면 물려있던 가상 플랫폼간의 :AFFECTED_BY 관계 자동 삭제
     neo4j_purge_cypher = """
         MATCH (i:Incident {id: $incident_id})
         DETACH DELETE i
@@ -202,7 +199,7 @@ async def redis_stream_end_time_cleaner():
                         target_incident_id = data.get("incident_id")
                         affected_place = data.get("affected", "알 수 없는 장소")
                         
-                        # [STEP 1] Neo4j 그래프 데이터베이스 동기화 청소
+                        # Neo4j 그래프 데이터베이스 동기화 청소
                         if target_incident_id:
                             try:
                                 async with config.neo4j_client.session() as session:
@@ -218,7 +215,7 @@ async def redis_stream_end_time_cleaner():
                                 # Neo4j 삭제 실패 시 데이터 무결성을 위해 Redis 삭제를 건너뛰고 다음 턴에 재시도
                                 continue 
                         
-                        # [STEP 2] Redis Stream 큐 메모리 관리 청소
+                        # Redis Stream 큐 메모리 관리 청소
                         await redis_client.xdel(stream_key, message_id)
                         logger.info(f"[MAS01 Worker3 Redis Stream Cleaner] 스트림 메시지 XDEL 완료 (MsgID: {message_id})")
                         

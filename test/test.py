@@ -1,61 +1,57 @@
-# apps/mas01_incident/agents.py
-from typing import TypedDict, Annotated, Sequence, Dict, List, Any
 import json
-import hashlib
+import re
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from openai import AsyncOpenAI
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, ToolMessage
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
-import operator
+import asyncio
 
-import config
-from config import logger
-from apps.mas01_incident.tools import resolve_address_point, resolve_between_nodes, resolve_linear_reference, publish_to_channel, kakao_keyword_to_latlng
+KANANA_MODEL_01_URL = "http://127.0.0.1:8001/v1"
+KANANA_MODEL_02_URL = "http://127.0.0.1:8002/v1"
+# kanana_client = AsyncOpenAI(base_url=KANANA_MODEL_01_URL, api_key="fake-key")
+kanana_client = AsyncOpenAI(base_url=KANANA_MODEL_02_URL, api_key="fake-key")
 
-class AgentState(TypedDict) :
-    raw_incident_data : Dict[str, Any]
-    extracted_entities : List[Dict[str, Any]]
-    affected_nodes : List[Dict[str, Any]]
-
-# LangGraph Node 함수 정의
-async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
-    """
-    교통 공지사항 정보로부터 엔터티(영향 받는 도로, 버스 노선, 버스 정류소, 지하철 노선, 지하철 역)추출
-    엔터티 별 경도와 위도를 추출합니다.
-    입력 : incident data
-    출력 : 영향 받는 도로별 정보 
-    """
-    raw_data = state['raw_incident_data']
-    logger.info(f"[MAS01 Agent : extract_affected] inputs : {raw_data}")
+def extract_json_array(raw_text):
+    # [ 로 시작해서 ] 로 끝나는 가장 긴 구간을 찾습니다. (점진적 매칭)
+    match = re.search(r'\[\s*\{.*\}\s*\]', raw_text, re.DOTALL)
     
-    raw_lat = raw_data.get("lat")
-    raw_lng = raw_data.get("lng")
-    
-    if raw_lat and raw_lng:
-        try:
-            val_lat = float(raw_lat)
-            val_lng = float(raw_lng)
+    if match:
+        json_string = match.group(0) # 매칭된 [ { ... } ] 부분만 추출
+        return json_string
+    else:
+        return None
+
+'''
+1. 본문에 대상 버스 노선 번호가 여러 개 나열되어 있는 경우(예: "대상노선: 571, 5012, 5528"), **절대로 콤마(,)나 공백으로 묶어서 하나의 객체에 집어넣지 마세요.** 노선 번호 하나당 하나의 독립된 JSON 객체를 생성해야 합니다. (즉, 3개의 노선이 나오면 리스트에 "BUS_LINE" 객체가 3개 생성되어야 합니다.)
+        2. "BUS_LINE" 객체를 추출할 때는 다음과 같이 작성하세요:
+        - "affected": 순수 버스 노선 번호 문자열만 깨끗하게 작성 (예: "571")
+        - "location_type": 반드시 "BUS_LINE"으로 지정
+        - "details": 모든 세부 필드(`road_name`, `start_node` 등)를 반드시 `null`로 처리하세요.
+        3. 본문에 버스 정류소 ID(5자리 숫자)가 명시되어 있다면 `location_type`을 "BUS"로 지정하고 `affected`에 해당 5자리 ID만 기재하세요. 본문에 나오지 않은 숨겨진 정류소 ID를 상상해서 지어내지 마세요.
+        
+        
+1. [필수 체크 및 필터링 규칙]: 입력된 교통 공지사항 본문 전체를 샅샅이 뒤져서 **5자리 숫자로 된 정류소 고유 ID(예: 23285 같은 5자리 숫자 번호)가 실제로 존재하는지** 먼저 검사하세요. 그리고 정류소 하나당 하나의 독립된 JSON 객체로 분리하여 `affected`에 오직 그 5자리 숫자만 기재하세요.
+            2. 만약 본문에 5자리 정류소 숫자 번호가 **단 하나도 적혀있지 않다면, "BUS" 유형의 JSON 객체는 최종 출력 배열(`[]`)에 절대, 단 하나도 포함시켜서는 안 됩니다.** (본문에 없는 숫자를 임의로 상상하거나 지어내어 출력하는 행위는 치명적인 환각 오류입니다.)
+            3. "affected" : 본문에 5자리 정류소 번호가 똑똑히 적혀있을 때만, 정류소 하나당 하나의 독립된 JSON 객체로 분리하여 `affected`에 오직 그 5자리 숫자만 기재하세요.
+            - **추출 절대 금지 (노선 무시):** 본문에 "대상노선: 162번, 163번", "총 9개 노선 무정차" 등 **버스 노선 번호나 운수 회사 이름만 있고 5자리 정류소 고유 번호(ID)가 없다면, 대중교통 관련 객체는 아예 생성하지 마세요.** 텍스트로 된 버스 노선 요약 문구를 "BUS" 유형의 객체로 독립 추출하는 행위는 절대 금지합니다.
             
-            # 100이 넘는 값(124~132)이 lat(위도)에 들어와 있다면 명백한 오류이므로 자리를 바꿉니다.
-            if val_lat > 100.0 and val_lng < 50.0:
-                logger.warning(f"🔄 [Redis 축 전도 감지] lat과 lng가 뒤바뀌어 들어왔습니다. 강제 교정합니다. (입력 lat: {val_lat}, lng: {val_lng})")
-                raw_data["lat"] = val_lng  # 37.52... 을 위도로
-                raw_data["lng"] = val_lat  # 127.05... 을 경도로
-            else:
-                # 데이터가 정상적으로 들어왔을 때의 포맷팅
-                raw_data["lat"] = val_lat
-                raw_data["lng"] = val_lng
-        except ValueError:
-            pass # 숫자가 아닐 경우의 예외 방어
-            
-    logger.info(f"[MAS01 Agent : extract_affected] 보정 완료된 레디스 데이터 : {raw_data}")
-    
-    kanana_client = AsyncOpenAI(base_url=config.KANANA_MODEL_02_URL, api_key="fake-key")
+
+
+대중교통 노선 번호 및 회사명 추출 절대 금지 전역 규칙]
+        - 본문에 등장하는 **3자리 또는 4자리 형태의 시내/광역 버스 노선 번호(예: 571, 5012, 5528, 405번 등), 5자리 형태의 영문혼합 버스 노선 번호(예 : M1101)**, 버스 운수 회사 이름, '총 O개 노선' 등의 대중교통 노선 요약 문구는 공간 좌표를 구하는 대상이 아니므로 **절대로 독립된 JSON 객체로 추출하지 마십시오. 최종 출력 리스트에서 완전히 제외하고 폐기해야 합니다.**
+        - 버스 노선 번호를 "BUS", "SUBWAY", "BETWEEN_NODES"를 포함한 그 어떤 location_type으로도 분류하거나 JSON 객체로 생성해서는 안 됩니다. 어떤 장소가 통제 당하는지에 집중해서 location_type을 결정하십시오.            
+'''
+
+async def ask_kanana(data):
+
+    # 2. Kanana 모델에게 질문 던지기
+    # vLLM 서버에 로드된 모델명을 정확히 입력해야 합니다.
+    raw_data = data
+
+    kanana_client = AsyncOpenAI(base_url=KANANA_MODEL_02_URL, api_key="fake-key")
     current_time = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d : %H:%M:%S")
     
+    # 프롬프트를 개별 분리하도록 명확하게 다듬었습니다.
     system_instruction = f"""
         [현재 시스템 기준 일시] : {current_time}
         
@@ -147,6 +143,8 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
             2. 🚨🚨 **[affected 필드 기재 절대 엄격 금지 규칙]** 🚨🚨
                - `affected` 필드에는 **오직, 오직 순수 지하철 호선/노선 이름만 단독으로** 깨끗하게 작성해야 합니다. 뒤에 '역' 이름을 붙이는 행위는 시스템을 붕괴시키는 치명적인 오류입니다.
                - 역 이름(예: 용산역, 자양역)은 **절대로, 무슨 일이 있어도 `affected`에 포함시켜서는 안 되며**, 무조건 `details` 내부의 `start_node`와 `end_node`로만 격리해야 합니다.
+
+               
                ⭕ **[GOOD 예시 - 올바른 출력]**:
                "affected": "1호선" (O)
                "affected": "7호선" (O)
@@ -199,223 +197,28 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
         temperature=0.1, # 답변의 일관성을 위해 0.2~0.3 유지 권장
     )
 
-    result = json.loads(response.choices[0].message.content)
-    logger.info(f"[MAS01 Agent : extract_affected] outputs : {result}")
-    return {"extracted_entities" : result}
-        
-async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
-    """
-    LLM이 추출한 extracted_entities 리스트를 루프 돌며,
-    location_type 별 최적의 GIS 함수를 실행해 lat, lng 사후 세팅
-    """
-    entities = state.get('extracted_entities', [])
-    logger.info(f"[MAS01 Agent : enrich_coordinates_node] Processing {len(entities)} entities...")
-    
-    final_processed_nodes = []
-    
-    for entity in entities:
-        item = entity.copy() # 원본 훼손 방지
-        location_type = item.get("location_type")
-        details = item.get("details", {})
-        affected_name = item.get("affected")
-        
-        if item.get("lat") is None or item.get("lng") is None:
-            coord_result = None
-            
-            # 1. 분기 라우팅 처리
-            if location_type == "BETWEEN_NODES":
-                coord_result = await resolve_between_nodes(
-                    road_name=details.get("road_name"),
-                    start_node=details.get("start_node"),
-                    end_node=details.get("end_node")
-                )
-            elif location_type == "LINEAR_REFERENCE":
-                coord_result = await resolve_linear_reference(
-                    road_name=details.get("road_name"),
-                    anchor_node=details.get("anchor_node"),
-                    offset_start=float(details.get("offset_start", 0)),
-                    offset_end=float(details.get("offset_end", 0))
-                )
-            elif location_type == "ADDRESS_POINT":
-                coord_result = await resolve_address_point(address=details.get("address"))
-                
-            # 2. 좌표 툴 연산 성공 시 결합
-            if coord_result:
-                item["lat"] = coord_result["lat"]
-                item["lng"] = coord_result["lng"]
-                
-                if not item.get("si"):
-                    item["si"] = coord_result.get("si")
-                if not item.get("gu"):
-                    item["gu"] = coord_result.get("gu")
-                logger.info(f"[MAS01 Agent : enrich_coordinates_node] 매핑 성공 [{affected_name}] -> {coord_result}")
-            else:
-                logger.warning(f"[MAS01 Agent : enrich_coordinates_node] 매핑 실패 [{affected_name}] - SHP 내 데이터 부재")
-                
-        final_processed_nodes.append(item)
-        logger.info(f"[MAS01 Agent : enrich_coordinates_node] 결과 : {final_processed_nodes}")
-        
-    return {"affected_nodes": final_processed_nodes}
+    # 3. 답변 출력
+    print("\n[Kanana 1.5 8B 답변]:")
+    print(json.loads(extract_json_array(response.choices[0].message.content)))
+        # print(type(response.choices[0].message.content))
 
-async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
-    nodes = state.get("affected_nodes", [])
-    logger.info(f"[MAS01 Agent : apply_to_neo4j_graph_node] {len(nodes)}개의 인프라 객체 그래프 DB 반영 시작...")
-    
-    cypher_query01 = """
-        MERGE (i:Incident {id: $incident_id})
-        ON CREATE SET 
-            i.content = $content,
-            i.location_type = $location_type,
-            i.start_time = datetime(replace($start_time, " ", "T")),
-            i.end_time = datetime(replace($end_time, " ", "T"))
-        WITH i
-        MATCH (s:Station {is_master: false, type: "BUS"})
-        WHERE point.distance(s.location, point({srid: 4326, x: $lng, y: $lat})) <= 200
-        MERGE (s)-[r:AFFECTED_BY]->(i)
-        RETURN count(r) as connected_count
-    """
-    
-    cypher_query02 = """
-        MERGE (i:Incident {id: $incident_id})
-        ON CREATE SET 
-            i.content = $content,
-            i.location_type = $location_type,
-            i.start_time = datetime(replace($start_time, " ", "T")),
-            i.end_time = datetime(replace($end_time, " ", "T"))
-        WITH i
-        MATCH (s:Station {type: "BUS", ars_id: $ars_id, is_master: false})
-        MERGE (s)-[r:AFFECTED_BY]->(i)
-        RETURN count(r) as connected_count
-    """
-    
-    cypher_query03 = """
-        MERGE (i:Incident {id: $incident_id})
-        ON CREATE SET 
-            i.content = $content,
-            i.location_type = $location_type,
-            i.start_time = datetime(replace($start_time, " ", "T")),
-            i.end_time = datetime(replace($end_time, " ", "T"))
-        WITH i
-        MATCH (start_st:Station {is_master: false})
-        WHERE start_st.route_id = $route_id AND start_st.name CONTAINS $start_node
-        MATCH (end_st:Station {is_master: false})
-        WHERE end_st.route_id = $route_id AND end_st.name CONTAINS $end_node
-        MATCH path = shortestPath((start_st)-[:NEXT_STOP*..30]->(end_st))
-        WITH i, nodes(path) as affected_platforms
-        UNWIND affected_platforms as s
-        MERGE (s)-[r:AFFECTED_BY]->(i)
-        RETURN count(r) as connected_count
-    """
-    
-    cypher_query04 = """
-        MERGE (i:Incident {id: $incident_id})
-        ON CREATE SET 
-            i.content = $content,
-            i.location_type = $location_type,
-            i.start_time = datetime(replace($start_time, " ", "T")),
-            i.end_time = datetime(replace($end_time, " ", "T"))
-        WITH i
-        MATCH (s:Station {is_master: false})
-        WHERE s.route_id = $route_id AND s.name CONTAINS $start_node
-        MERGE (s)-[r:AFFECTED_BY]->(i)
-        RETURN count(r) as connected_count
-    """
-    
-    success_nodes = []
-    
-    # 1단계: 모든 엔터티 루프를 돌며 Neo4j 세션 단독 실행 및 완전 밀봉
-    for node in nodes :
-        item = node.copy()
-        lat = item.get("lat")
-        lng = item.get("lng")
-        affected = item.get("affected")
-        location_type = item.get("location_type")
-        
-        result = None
-        try:
-            async with config.neo4j_client.session() as session:
-                if location_type == "BUS":
-                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_BUS_{affected}".encode('utf-8')).hexdigest()
-                    result = await session.run(
-                        cypher_query02,
-                        incident_id=incident_id,
-                        content=item.get("content"),
-                        location_type=location_type,
-                        start_time=item.get("startDateTime"),
-                        end_time=item.get("endDateTime"),
-                        ars_id=str(affected).strip()
-                    )
-                elif location_type == "SUBWAY" :
-                    details = item.get("details")
-                    start_st = details.get("start_node").replace("역", "")  
-                    end_st = details.get("end_node").replace("역", "")
-                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_{item.get('affected')}_{start_st}_{end_st}".encode('utf-8')).hexdigest()
-                    
-                    if start_st == end_st:
-                        result = await session.run(
-                            cypher_query04, 
-                            incident_id=incident_id, 
-                            content=item.get("content"), 
-                            location_type=location_type, 
-                            start_time=item.get("startDateTime"), 
-                            end_time=item.get("endDateTime"), 
-                            route_id=str(item.get("affected")).strip(), 
-                            start_node=str(start_st).strip(), 
-                            end_node=str(end_st).strip()
-                        )
-                    else : 
-                        result = await session.run(
-                            cypher_query03, 
-                            incident_id=incident_id, 
-                            content=item.get("content"), 
-                            location_type=location_type, 
-                            start_time=item.get("startDateTime"), 
-                            end_time=item.get("endDateTime"), 
-                            route_id=str(item.get("affected")).strip(), 
-                            start_node=str(start_st).strip(), 
-                            end_node=str(end_st).strip()
-                        )
-                else :
-                    if lat is None or lng is None:
-                        logger.warning(f"[MAS01 Agent apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재로 패스.")
-                        continue
-                    
-                    incident_id = hashlib.md5(f"{item.get('startDateTime')}_{lat}_{lng}".encode('utf-8')).hexdigest()
-                    result = await session.run(cypher_query01, incident_id=incident_id, content=item.get("content"), location_type=item.get("location_type"), start_time=item.get("startDateTime"), end_time=item.get("endDateTime"), lat=float(lat), lng=float(lng))
-                    
-                # 분기별 무관하게 result.single()을 소모하여 그래프 트랜잭션 동기화 및 강제 빌드 유도
-                record = await result.single()
-                connected_count = record["connected_count"] if record else 0
-                
-                item["incident_id"] = incident_id
-                success_nodes.append(item)
-                logger.info(f"[MAS01 Agent apply_to_neo4j_graph_node][Neo4j 동기화 완료] [{item.get('affected')}] 관계선 {connected_count}개소 융합 완료.")
-                
-        except Exception as e:
-            logger.error(f"[MAS01 apply_to_neo4j_graph_node ] [Neo4j 세션 오류] '{item.get('affected')}' 처리 실패: {e}")
-            continue
-            
-    # 루프가 완전히 종료(Neo4j DB 영구커밋 완료)된 안전 구역에서만 Redis 발행 기동!!
-    logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Neo4j] 모든 인프라 노드 완벽 저장 성공. 최종 채널 전파를 시작합니다 (총 {len(success_nodes)}건)")
-    for s_node in success_nodes:
-        gu_name = s_node.get("gu")
-        si_name = s_node.get("si")
-        if gu_name:
-            await publish_to_channel(gu_name, si_name, s_node)
-            logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Redis] DB 무결성을 확인한 후 안전하게 [{gu_name}] 스트림 발행 성공!")
-            
-    return {"affected_nodes": success_nodes}
-    
+    # except Exception as e:
+    #     print(f"에러가 발생했습니다: {e}")
 
-mas01_workflow = StateGraph(AgentState)
 
-mas01_workflow.add_node('extract_affected_node', extract_affected_node)
-mas01_workflow.add_node('enrich_coordinates_node', enrich_coordinates_node)
-mas01_workflow.add_node('apply_to_neo4j_graph_node', apply_to_neo4j_graph_node)
-
-mas01_workflow.set_entry_point('extract_affected_node')
-mas01_workflow.add_edge('extract_affected_node', 'enrich_coordinates_node')
-mas01_workflow.add_edge('enrich_coordinates_node', 'apply_to_neo4j_graph_node')
-mas01_workflow.add_edge('apply_to_neo4j_graph_node', END)
-
-mas01_agent = mas01_workflow.compile()
+# 4. 비동기 함수 실행
+if __name__ == "__main__":
+    data01 = """2026 나는 솔로런 개최에 따른 버스 임시우회 예정입니다.아래의 내용을 확인하시어 통행에 유의하시기 바랍니다. 가. 행사 개요  - 행사명 : 2026 나는 솔로런  - 일시 : '26.5.9.(토) 07:10 ~ 09:10  - 장소 : 여의도 광장 ~ 서강대교 일대  나. 버스 임시우회 개요  - 대상노선 : 162번(대진여객), 163(동아운수) 등 총 9개 노선  - 통제일시 : '26.5.9.(토) 07:10 ~ 09:10 (2시간)  - 대회경로 : 여의도공원교차로↔한국방송공사교차로↔서강대교 남단교차로↔서강대교 북단※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data02 = """{"si":"서울특별시","gu":"강서구","info":" 증산로 (증산교 → 중동교) 1차로 시설물보수","x":"191415.472772148","y":"453117.4381946633","startDateTime":"2026-05-25 10:13:00","endDateTime":"2026-05-25 18:00:00","lat":"126.90281730302672","lng":"37.57756597948374"}"""
+    data03 = """자동차전용도로(올림픽대로, 서부간선로) 포장공사에 따른 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.  □ 교통통제 개요  - 노선 : 올림픽대로- 위치 : (공항) 행주대교 지난 300m~600m 2,3차로 외 1개소 - 일시 : 5월13일 ~ 14일(22:00~06:00) - 노선 : 서부간선로- 위치 : (시흥) 금하지하차도 지난 250m~650m (전폭) 외 2개소 - 일시 : 5월19일 ~ 28일 중 6일 (22:00~06:00)  ※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data04 = """[서소문 고가차도 철거현장 사고]□ 도로통제- 서소문로 (경찰청교차로 ↔ 충정로) 진행방향 전면통제 (5.26(화) 15:04 ~)- 서소문로 (경찰청교차로 ↔ 충정로) 양방향 전면통제 (15:25 ~)- 서소문로 (경찰청교차로 ↔ 서울아리수본부앞) 삼거리 양방향 전면통제 (17:02 ~ )□ 철도통제 (경의중앙선) 서울역 → 수색역 구간 양방향 운행 중지, 이외구간 운행 가능ㅇ 한국철도공사(코레일) 홈페이지- 서소문 고가차도 붕괴로 일부 열차운행 중지 및 지연 안내https://www.korail.com/ticket/guest/notice/24546□ 퇴근시간대 버스집중배차(총 53개 : 서울 33개, 경기 20, 인천 0)※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data05 = """2026 서울관광 푸드 페스티벌 행사개최에 따른 버스 임시우회예정입니다.아래의 내용을 확인하시어 통행에 유의하시기 바랍니다.가. 행사 개요- 행사명:2026 서울관광 푸드 페스티- 행사일시 :'26.5.30.(토) 12:00 ~ 20:00- 장소 :잠수교 및 반포한강공원나. 버스 임시우회 개요- 대상노선 :405번, 740번 등 총 2개 노선- 우회일시 :'26.5.30.(토) 00:00 ~ 24:00 (24시간)- 통제구간 :한강 잠수교 및 반포한강공원 남단 달빛광장※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data06 = """가산동 옹벽 보수공사로 인해 버스 임시우회 운영 예정입니다.아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 대상노선:571, 5012, 5528 (3개노선, 신인운수)○ 공사기간 :5/28(목) ~ 5/30(토) (2회, 22:00 ~ 05:00)○ 공사구간 :금천구 가산동 535-31 (광명대교 전 고가차도 옆 서부샛길)○ 통제사유:옹벽 보수공사※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data07 = """강남구 관내 집회 대비 시내버스 정류소 무정차 예정입니다.아래의 내용을 확인하시어 통행에 유의하시기 바랍니다.ㅇ 교통통제개요- 일시 : '26.5.27.(수) 14:00 ~ 16:00- 행진 :15:00 ~16:00 (서초署 정곡빌딩 남관 앞에서 출발, 하위 1개차로 행진)*강남역 사거리 좌→강남역 사거리11번 출구→ 신논현역 5번 출구 U턴→ 강남역 10번출구 → 서초역으로 이동ㅇ 무정차 버스정류소 및 노선 내역- 26.5.27 (수) 15:10 ~ 16:00[무정차 통과 정류장]23285, 23641, 23580, 32055, 23286, 22838, 22172, 22413, 22411,22410,31057, 22409, 22408, 22407,22406,22173, 22850"""
+    data08 = """5/18(월)~5/27(수) 청계천복개도로 공사 관련 교통통제 및 버스임시우회 안내
+청계천복개도로 노후 포장 공사로 인해 교통통제 및 우회노선 운영 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사기간 : 5/18(월)~5/27(수) (일별 22:00~익일 06:00)○ 공사구간 : 청계천 복개도로 고산자교~무학교 구간 ○ 대상노선 : 2221번(신흥운수)○ 미운행구간 : 시립동부병원 앞 교차로~서울시설공단 교차로~무학교 구간○ 무정차정류소 : 용두신동아아파트(06162) ~ 동아제약(06185) 정류소(총 4개소) ※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data09 = """서울교통공사에서 알려드립니다.오늘 오후 7시 30분부터 7호선 자양역 인근에서 한강불빛 공연이 예정되어 있습니다. 행사역인 자양역은 대단히 혼잡할 예정이오니 자양역 일대를 이용할 고객님께서는 이점 참고하여 열차를 이용해 주시기 바랍니다. 감사합니다. 05-16 18:03:10 05-16 18:28:22"""
+    data10 = """서소문 고가 철거공사 관계로 오늘밤 12시부터 2호선 을지로입구역에서 홍대입구역 간 열차운행을 중단합니다.  열차 이용에 참고하시기 바랍니다.[서울교통공사] 05-28 21:04:58"""
+    data11 = """2026 차없는 잠수교 뚜벅뚜벅축제로 인해 교통통제 및 시내버스 우회 운행 예정입니다. 행사 주변 도로 혼잡이 우려되므로, 대중교통 이용 부탁드립니다. □ 행사 및 통제개요○ 행사명 : 2026 차 없는 잠수교 뚜벅뚜벅 축제- 기    간 :  2026.4.26.(일) ~ 6.14. 매주 일요일, 총 8회- 시    간 :  (5.3~6.14.) 행사 : 13시 ~ 21시 / 교통통제 : 11시 ~ 23시- 장    소 : 잠수교 및 반포한강공원 일대- 통제구간 : 잠수교 북단~남단 달빛광장 (L=1.1km)  □ 버스 임시우회 개요- 잠수교 운행 2개 노선(405, 740번) : 반포대교로 임시 우회- 기존 정류장에서 600m 이격 '반포대교 남단, 한강시민공원입구 정류소 승하차 ※ 자세한 내용은 첨부파일을 참고 부탁드립니다."""
+    data12 = """{"si":"서울특별시","gu":"중구","info":"1호선 용산역 화재로 인한 전면 통제","start":"2026-06-09 09:18:00","end":"2026-06-09 20:30:00","lat":"126.964428","lng":"37.529679","created_at":"2026-06-09 11:42:06"}"""
+    asyncio.run(ask_kanana(data08))
