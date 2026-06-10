@@ -8,10 +8,9 @@ import geopandas as gpd
 from shapely.ops import nearest_points
 
 from typing import Dict, Any, Tuple, Optional
-from config import logger
 import config
 
-# 💡 국가 표준 시군구코드(5자리)를 시/구 명칭으로 디코딩하기 위한 매핑 딕셔너리
+# 국가 표준 시군구코드(5자리)를 시/구 명칭으로 디코딩하기 위한 매핑 딕셔너리
 # 서울시 25개 구 예시 (프로젝트 범위에 따라 타 시도 코드를 확장해 나가시면 됩니다)
 ADMIN_DISTRICT_MAP = {
     "11110": ("서울특별시", "종로구"), "11140": ("서울특별시", "중구"),
@@ -49,7 +48,7 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
             info_text = incident_data['title'] + "\n" + incident_data['content']
         
         if not info_text:
-            logger.warning("[Check Duplicate] info 내용이 없어 검증을 우회합니다.")
+            config.logger.warning("[Check Duplicate] info 내용이 없어 검증을 우회합니다.")
             return True
             
         hash_generator = hashlib.md5()
@@ -77,10 +76,10 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
             ex=ttl_seconds,
             nx=True
         )
-        logger.info(f"[MAS01 tools.py check_duplicate] redis에 dedup 생성")
+        config.logger.info(f"[MAS01 tools.py check_duplicate] redis에 dedup 생성")
         return bool(is_new)
     except Exception as e:
-        logger.error(f"[Check Duplicate Error] 예외 발생: {e}")
+        config.logger.error(f"[Check Duplicate Error] 예외 발생: {e}")
         return False
 
 def to_wgs84(geom) -> Tuple[float, float]:
@@ -201,7 +200,7 @@ async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
         "address": str(details_data.get("address", ""))
     }
     
-    logger.info(f"[MAS01 Tools.py] {stream_key} 스트림 발행 : {flat_data['affected']} {flat_data['content']}")
+    config.logger.info(f"[MAS01 Tools.py] {stream_key} 스트림 발행 : {flat_data['affected']} {flat_data['content']}")
     await config.redis_client.xadd(name=stream_key, fields=flat_data)
 
 # @tool

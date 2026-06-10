@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 # 프로젝트 전역 DB 클라이언트를 가져옵니다.
 import config
-from config import logger
 
 load_dotenv()
 
@@ -25,7 +24,7 @@ class TransportApp:
         await self.delete_gds_graph3()
         
     async def delete_gds_graph1(self):
-        logger.info("기존 가상 메모리 그래프(network_best) 삭제 요청...")
+        config.logger.info("기존 가상 메모리 그래프(network_best) 삭제 요청...")
         async with self.driver.session(database="neo4j") as session:
             drop_query = "CALL gds.graph.drop('network_best', false) YIELD graphName;"
             try:
@@ -35,7 +34,7 @@ class TransportApp:
                 pass
             
     async def delete_gds_graph2(self):
-        logger.info("기존 가상 메모리 그래프(network_subway_best) 삭제 요청...")
+        config.logger.info("기존 가상 메모리 그래프(network_subway_best) 삭제 요청...")
         async with self.driver.session(database="neo4j") as session:
             drop_query = "CALL gds.graph.drop('network_subway_best', false) YIELD graphName;"
             try:
@@ -45,7 +44,7 @@ class TransportApp:
                 pass
     
     async def delete_gds_graph3(self):
-        logger.info("기존 가상 메모리 그래프(network_bus_only) 삭제 요청...")
+        config.logger.info("기존 가상 메모리 그래프(network_bus_only) 삭제 요청...")
         async with self.driver.session(database="neo4j") as session:
             drop_query = "CALL gds.graph.drop('network_bus_only', false) YIELD graphName;"
             try:
@@ -55,7 +54,7 @@ class TransportApp:
                 pass
             
     async def build_gds_graph1(self):
-        logger.info("Best GDS Graph [돌발 상황 가중치 반영형 복합망] 가상 프로젝션 빌드 시작...")
+        config.logger.info("Best GDS Graph [돌발 상황 가중치 반영형 복합망] 가상 프로젝션 빌드 시작...")
         async with self.driver.session(database="neo4j") as session:
             # 🎯 [교정] gds.graph.project.cypher 로 변경하여 쿼리 텍스트를 파싱하도록 강제합니다.
             project_query = """
@@ -97,13 +96,13 @@ class TransportApp:
                 project_result = await session.run(project_query)
                 record = await project_result.single()
                 if record:
-                    logger.info("[성공] 수단 탑승 우선순위 및 돌발 페널티 반영 가상 그래프 빌드 완료!")
+                    config.logger.info("[성공] 수단 탑승 우선순위 및 돌발 페널티 반영 가상 그래프 빌드 완료!")
             except Exception as e:
-                logger.error(f"\n❌ 가상 그래프 빌드 함수 내부 에러: {e}\n")
+                config.logger.error(f"\n❌ 가상 그래프 빌드 함수 내부 에러: {e}\n")
                 raise e
 
     async def build_gds_graph2(self):
-        logger.info("Subway GDS Graph [돌발 상황 가중치 반영형 지하철 최우선망] 가상 프로젝션 빌드 시작...")
+        config.logger.info("Subway GDS Graph [돌발 상황 가중치 반영형 지하철 최우선망] 가상 프로젝션 빌드 시작...")
         async with self.driver.session(database="neo4j") as session:
             try:
                 await session.run("CALL gds.graph.drop('network_subway_best', false)")
@@ -161,13 +160,13 @@ class TransportApp:
                 project_result = await session.run(project_query)
                 record = await project_result.single()
                 if record and record["graphName"]:
-                    logger.info(f"[성공] 가상 그래프 '{record['graphName']}' 메모리 프로젝션 빌드 성공!")
+                    config.logger.info(f"[성공] 가상 그래프 '{record['graphName']}' 메모리 프로젝션 빌드 성공!")
             except Exception as e:
-                logger.error(f"\n[치명적 오류] 가상 그래프 빌드 함수 내부에서 프로젝션 실패: {e}\n")
+                config.logger.error(f"\n[치명적 오류] 가상 그래프 빌드 함수 내부에서 프로젝션 실패: {e}\n")
                 raise e
 
     async def build_gds_graph3(self):
-        logger.info("Bus-Only GDS Graph [돌발 상황 가중치 반영형 버스 전용망] 빌드 시작...")
+        config.logger.info("Bus-Only GDS Graph [돌발 상황 가중치 반영형 버스 전용망] 빌드 시작...")
         async with self.driver.session(database="neo4j") as session:
             try:
                 await session.run("CALL gds.graph.drop('network_bus_only', false)")
@@ -213,9 +212,9 @@ class TransportApp:
                 project_result = await session.run(project_query)
                 record = await project_result.single()
                 if record and record["graphName"]:
-                    logger.info(f"[성공] 가상 그래프 '{record['graphName']}' OOM 우회 빌드 성공!")
+                    config.logger.info(f"[성공] 가상 그래프 '{record['graphName']}' OOM 우회 빌드 성공!")
             except Exception as e:
-                logger.error(f"\n[빌드 실패] 메모리 에러: {e}\n")
+                config.logger.error(f"\n[빌드 실패] 메모리 에러: {e}\n")
                 raise e
             
     async def get_optimal_path1(self, start_id, end_id):

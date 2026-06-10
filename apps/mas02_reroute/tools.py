@@ -3,7 +3,6 @@ import math
 import json
 
 import config
-from config import logger
 
 def calculate_distance_meters(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     """
@@ -48,10 +47,10 @@ async def get_affected_coordinates_from_neo4j(incident_id: str) -> list:
             records = await result.data()
             
             # 결과 예시: [{'x': 126.941659, 'y': 37.514206}, ...]
-            logger.info(f"📍 [Neo4j] 통제 구역 내 물리 좌표 {len(records)}개 확보 완료.")
+            config.logger.info(f"📍 [Neo4j] 통제 구역 내 물리 좌표 {len(records)}개 확보 완료.")
             return records
     except Exception as e:
-        logger.error(f"❌ [Neo4j Coordinate Tool Error] 통제 좌표 추출 실패: {e}")
+        config.logger.error(f"❌ [Neo4j Coordinate Tool Error] 통제 좌표 추출 실패: {e}")
         return []
 
 async def get_active_users_by_coordinates(affected_coords: list, incident_id:str) -> list:
@@ -74,7 +73,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
             user_id = tokens[4]
             user_latest_keys[user_id] = {"key": key}
                 
-    logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명")
+    config.logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명")
 
     affected_user_reco_ids = []
     affected_user_xy = []
@@ -94,7 +93,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
             
         raw_data = raw_data.strip()
         if not raw_data or not raw_data.startswith(('[', '{')):
-            logger.warning(f"⚠️ 유저 {user_id}의 Redis 데이터가 올바른 JSON 포맷이 아닙니다. 스킵합니다.")
+            config.logger.warning(f"⚠️ 유저 {user_id}의 Redis 데이터가 올바른 JSON 포맷이 아닙니다. 스킵합니다.")
             continue
             
         user_xy_list = json.loads(raw_data)
@@ -131,7 +130,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                     # 💡 [보정] 자료형에 상관없이 안전하게 추출된 노드 리스트(또는 원본 리스트)를 append 합니다.
                     affected_user_xy.append(target_nodes)
                     
-                    logger.warning(f"[MAS02 tools.py get_active_users_by_coordinates][신규 난입 포착] 유저 {user_id}번이 통제 구역 {actual_distance:.2f}m 거리에 진입!")
+                    config.logger.warning(f"[MAS02 tools.py get_active_users_by_coordinates][신규 난입 포착] 유저 {user_id}번이 통제 구역 {actual_distance:.2f}m 거리에 진입!")
                     break 
                     
             if is_user_affected: break 
@@ -152,7 +151,7 @@ async def get_incident_meta_data(incident_id: str ) -> dict:
 
     meta_key = f"incident:meta:{incident_id}"
     
-    logger.info(f"🔍 [Redis 읽기] 사건 메타 데이터 캐시 스캔 시작: {meta_key}")
+    config.logger.info(f"🔍 [Redis 읽기] 사건 메타 데이터 캐시 스캔 시작: {meta_key}")
     
     try:
         # 1. Redis에서 데이터 읽어오기
@@ -160,7 +159,7 @@ async def get_incident_meta_data(incident_id: str ) -> dict:
         
         # 데이터가 아예 존재하지 않는 경우 (캐시 미스) 빈 딕셔너리 리턴
         if not raw_meta:
-            logger.warning(f"⚠️ [Redis 캐시 미스] 해당 키의 데이터가 존재하지 않거나 만료되었습니다: {meta_key}")
+            config.logger.warning(f"⚠️ [Redis 캐시 미스] 해당 키의 데이터가 존재하지 않거나 만료되었습니다: {meta_key}")
             return {}
             
         # 2. 바이트 타입일 경우 문자열로 안전하게 디코딩
@@ -174,11 +173,11 @@ async def get_incident_meta_data(incident_id: str ) -> dict:
         if isinstance(meta_dict, str):
             meta_dict = json.loads(meta_dict)
             
-        logger.info(f"⚡ [Redis 캐시 적중] 성공적으로 메타 정보를 복원했습니다. (사건 요약: {meta_dict.get('incident', '내용 없음')})")
+        config.logger.info(f"⚡ [Redis 캐시 적중] 성공적으로 메타 정보를 복원했습니다. (사건 요약: {meta_dict.get('incident', '내용 없음')})")
         return meta_dict
 
     except Exception as e:
-        logger.error(f"❌ [Redis 읽기 에러] {meta_key} 데이터 파싱 중 실패: {e}")
+        config.logger.error(f"❌ [Redis 읽기 에러] {meta_key} 데이터 파싱 중 실패: {e}")
         return {}
     
 def calculate_distance(lat1, lng1, lat2, lng2):
@@ -192,7 +191,7 @@ def calculate_distance(lat1, lng1, lat2, lng2):
     return R * 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
 
 async def total_cost(final_routes_path):
-    logger.info(f"MAS02 tools.py total cost 진입")
+    config.logger.info(f"MAS02 tools.py total cost 진입")
     for idx, route in enumerate(final_routes_path):
         total_distance = 0
         max_base_fare = 0
@@ -232,6 +231,6 @@ async def total_cost(final_routes_path):
             final_fare += extra_fare
             
         route["cost"] = final_fare
-    logger.info(f"MAS02 tools.py total cost 완료")
+    config.logger.info(f"MAS02 tools.py total cost 완료")
         
     return final_routes_path

@@ -8,7 +8,6 @@ from openai import AsyncOpenAI
 from langgraph.graph import StateGraph, END
 
 import config
-from config import logger
 from apps.mas02_reroute.rerouting import TransportApp
 from apps.mas02_reroute.tools import get_incident_meta_data, calculate_distance, total_cost
 
@@ -28,7 +27,7 @@ async def fetch_user_realtime_context(state: ReroutingAgentState) -> Dict[str, A
     incident_id = state["incident_id"]
     redis_client = config.redis_client
     
-    logger.info(f"[MAS02 agents.py][Step 1] 유저 {user_id}의 GPS-경로 인덱스 정밀 동기화...")
+    config.logger.info(f"[MAS02 agents.py][Step 1] 유저 {user_id}의 GPS-경로 인덱스 정밀 동기화...")
     
     # 1. GPS 로그 파싱
     raw_list = await redis_client.lrange(f"location:user:{user_id}", 0, -1)
@@ -138,7 +137,7 @@ async def extract_routing_station_names(state:ReroutingAgentState) -> List[Dict[
             }
             is_not_last_node = False
         idx -= 1
-    logger.info(f"[MAS02 agents.py extract_routing_station_names] 노드 추출 완료 : {outputs}")
+    config.logger.info(f"[MAS02 agents.py extract_routing_station_names] 노드 추출 완료 : {outputs}")
     return {
         "extracted_nodes" : outputs
     }
@@ -148,7 +147,7 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
     start_node = node.get("start_node")
     end_node = node.get("end_node")
     
-    logger.info(f"[MAS02 agents.py][Step 3] 제공된 스펙 기반 마스터 node_id 추출 시작...")
+    config.logger.info(f"[MAS02 agents.py][Step 3] 제공된 스펙 기반 마스터 node_id 추출 시작...")
 
     async def get_bus_node_id(target_node: Dict) -> str:
         ars_id = str(target_node.get("arsID")).strip()
@@ -212,7 +211,7 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
     else: 
         end_node_id = await get_subway_node_id(end_node)
     
-    logger.info(f"[MAS02 agents.py resolve_neo4j_node_ids ID 매핑 완료] 시작 ID: {start_node_id} / 종료 ID: {end_node_id}")
+    config.logger.info(f"[MAS02 agents.py resolve_neo4j_node_ids ID 매핑 완료] 시작 ID: {start_node_id} / 종료 ID: {end_node_id}")
     
     return {
         "resolved_node_ids": {
@@ -250,12 +249,12 @@ async def generate_and_format_routes(state: ReroutingAgentState) -> List[Dict[st
     for r in query_3_result:
         r['path_idx'] = path_counter; combined_records.append(r); path_counter += 1
         
-    logger.info(f"독립 3-Query 최적 원본 레코드 취합 완료 (총 후보군: {len(combined_records)})") 
+    config.logger.info(f"독립 3-Query 최적 원본 레코드 취합 완료 (총 후보군: {len(combined_records)})") 
     
     # format_perfect_routing_paths는 순수 연산 함수(동기식)이므로 기존 구조 유지
     final_routes = app.format_perfect_routing_paths(combined_records)
     
-    logger.info(f"[MAS02 routes 1]\n {final_routes}")
+    config.logger.info(f"[MAS02 routes 1]\n {final_routes}")
     
     
     return {

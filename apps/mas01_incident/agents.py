@@ -12,8 +12,7 @@ from langgraph.prebuilt import ToolNode
 import operator
 
 import config
-from config import logger
-from apps.mas01_incident.tools import resolve_address_point, resolve_between_nodes, resolve_linear_reference, publish_to_channel, kakao_keyword_to_latlng
+from apps.mas01_incident.tools import resolve_address_point, resolve_between_nodes, resolve_linear_reference, publish_to_channel
 
 class AgentState(TypedDict) :
     raw_incident_data : Dict[str, Any]
@@ -29,7 +28,7 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
     출력 : 영향 받는 도로별 정보 
     """
     raw_data = state['raw_incident_data']
-    logger.info(f"[MAS01 Agent : extract_affected] inputs : {raw_data}")
+    config.logger.info(f"[MAS01 Agent : extract_affected] inputs : {raw_data}")
     
     raw_lat = raw_data.get("lat")
     raw_lng = raw_data.get("lng")
@@ -41,7 +40,7 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
             
             # 100이 넘는 값(124~132)이 lat(위도)에 들어와 있다면 명백한 오류이므로 자리를 바꿉니다.
             if val_lat > 100.0 and val_lng < 50.0:
-                logger.warning(f"🔄 [Redis 축 전도 감지] lat과 lng가 뒤바뀌어 들어왔습니다. 강제 교정합니다. (입력 lat: {val_lat}, lng: {val_lng})")
+                config.logger.warning(f"🔄 [Redis 축 전도 감지] lat과 lng가 뒤바뀌어 들어왔습니다. 강제 교정합니다. (입력 lat: {val_lat}, lng: {val_lng})")
                 raw_data["lat"] = val_lng  # 37.52... 을 위도로
                 raw_data["lng"] = val_lat  # 127.05... 을 경도로
             else:
@@ -51,7 +50,7 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
         except ValueError:
             pass # 숫자가 아닐 경우의 예외 방어
             
-    logger.info(f"[MAS01 Agent : extract_affected] 보정 완료된 레디스 데이터 : {raw_data}")
+    config.logger.info(f"[MAS01 Agent : extract_affected] 보정 완료된 레디스 데이터 : {raw_data}")
     
     kanana_client = AsyncOpenAI(base_url=config.KANANA_MODEL_02_URL, api_key="fake-key")
     current_time = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d : %H:%M:%S")
@@ -200,7 +199,7 @@ async def extract_affected_node(state:AgentState) -> Dict[str, Any] :
     )
 
     result = json.loads(response.choices[0].message.content)
-    logger.info(f"[MAS01 Agent : extract_affected] outputs : {result}")
+    config.logger.info(f"[MAS01 Agent : extract_affected] outputs : {result}")
     return {"extracted_entities" : result}
         
 async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
@@ -209,7 +208,7 @@ async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
     location_type 별 최적의 GIS 함수를 실행해 lat, lng 사후 세팅
     """
     entities = state.get('extracted_entities', [])
-    logger.info(f"[MAS01 Agent : enrich_coordinates_node] Processing {len(entities)} entities...")
+    config.logger.info(f"[MAS01 Agent : enrich_coordinates_node] Processing {len(entities)} entities...")
     
     final_processed_nodes = []
     
@@ -248,18 +247,18 @@ async def enrich_coordinates_node(state: AgentState) -> Dict[str, Any]:
                     item["si"] = coord_result.get("si")
                 if not item.get("gu"):
                     item["gu"] = coord_result.get("gu")
-                logger.info(f"[MAS01 Agent : enrich_coordinates_node] 매핑 성공 [{affected_name}] -> {coord_result}")
+                config.logger.info(f"[MAS01 Agent : enrich_coordinates_node] 매핑 성공 [{affected_name}] -> {coord_result}")
             else:
-                logger.warning(f"[MAS01 Agent : enrich_coordinates_node] 매핑 실패 [{affected_name}] - SHP 내 데이터 부재")
+                config.logger.warning(f"[MAS01 Agent : enrich_coordinates_node] 매핑 실패 [{affected_name}] - SHP 내 데이터 부재")
                 
         final_processed_nodes.append(item)
-        logger.info(f"[MAS01 Agent : enrich_coordinates_node] 결과 : {final_processed_nodes}")
+        config.logger.info(f"[MAS01 Agent : enrich_coordinates_node] 결과 : {final_processed_nodes}")
         
     return {"affected_nodes": final_processed_nodes}
 
 async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
     nodes = state.get("affected_nodes", [])
-    logger.info(f"[MAS01 Agent : apply_to_neo4j_graph_node] {len(nodes)}개의 인프라 객체 그래프 DB 반영 시작...")
+    config.logger.info(f"[MAS01 Agent : apply_to_neo4j_graph_node] {len(nodes)}개의 인프라 객체 그래프 DB 반영 시작...")
     
     cypher_query01 = """
         MERGE (i:Incident {id: $incident_id})
@@ -377,7 +376,7 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
                         )
                 else :
                     if lat is None or lng is None:
-                        logger.warning(f"[MAS01 Agent apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재로 패스.")
+                        config.logger.warning(f"[MAS01 Agent apply_to_neo4j_graph_node] : [{item.get('affected')}] 좌표 정보 부재로 패스.")
                         continue
                     
                     incident_id = hashlib.md5(f"{item.get('startDateTime')}_{lat}_{lng}".encode('utf-8')).hexdigest()
@@ -389,20 +388,20 @@ async def apply_to_neo4j_graph_node(state:AgentState) -> Dict[str, Any] :
                 
                 item["incident_id"] = incident_id
                 success_nodes.append(item)
-                logger.info(f"[MAS01 Agent apply_to_neo4j_graph_node][Neo4j 동기화 완료] [{item.get('affected')}] 관계선 {connected_count}개소 융합 완료.")
+                config.logger.info(f"[MAS01 Agent apply_to_neo4j_graph_node][Neo4j 동기화 완료] [{item.get('affected')}] 관계선 {connected_count}개소 융합 완료.")
                 
         except Exception as e:
-            logger.error(f"[MAS01 apply_to_neo4j_graph_node ] [Neo4j 세션 오류] '{item.get('affected')}' 처리 실패: {e}")
+            config.logger.error(f"[MAS01 apply_to_neo4j_graph_node ] [Neo4j 세션 오류] '{item.get('affected')}' 처리 실패: {e}")
             continue
             
     # 루프가 완전히 종료(Neo4j DB 영구커밋 완료)된 안전 구역에서만 Redis 발행 기동!!
-    logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Neo4j] 모든 인프라 노드 완벽 저장 성공. 최종 채널 전파를 시작합니다 (총 {len(success_nodes)}건)")
+    config.logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Neo4j] 모든 인프라 노드 완벽 저장 성공. 최종 채널 전파를 시작합니다 (총 {len(success_nodes)}건)")
     for s_node in success_nodes:
         gu_name = s_node.get("gu")
         si_name = s_node.get("si")
         if gu_name:
             await publish_to_channel(gu_name, si_name, s_node)
-            logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Redis] DB 무결성을 확인한 후 안전하게 [{gu_name}] 스트림 발행 성공!")
+            config.logger.info(f"[MAS01 apply_to_neo4j_graph_node] [MAS01 -> Redis] DB 무결성을 확인한 후 안전하게 [{gu_name}] 스트림 발행 성공!")
             
     return {"affected_nodes": success_nodes}
     

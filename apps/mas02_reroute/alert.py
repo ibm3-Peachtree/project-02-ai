@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 
 from openai import AsyncOpenAI
 
-from config import logger
 import config
 
 async def summarize_notice(payload:dict) :
@@ -69,7 +68,7 @@ async def summarize_notice(payload:dict) :
     )
 
     result = json.loads(response.choices[0].message.content)
-    logger.info(f"[MAS02 incident summary] outputs : {result}")
+    config.logger.info(f"[MAS02 incident summary] outputs : {result}")
     return result
 
 async def process_and_save_alerts(payload: dict, affected_user_ids: list):
@@ -102,7 +101,7 @@ async def process_and_save_alerts(payload: dict, affected_user_ids: list):
             
         # 사건 메타 캐시 적재 (사건 개별 TTL 작동 개시)
         await redis_client.set(name=meta_key, value=json.dumps(summary_result, ensure_ascii=False), ex=ttl_seconds)
-        logger.info(f"[mas02 alert.py Redis Save] 신규 사건 메타 캐시 완료: {incident_id} (TTL: {ttl_seconds}초)")
+        config.logger.info(f"[mas02 alert.py Redis Save] 신규 사건 메타 캐시 완료: {incident_id} (TTL: {ttl_seconds}초)")
         
     # 3. 영향권에 포함된 유저 리스트를 돌며 주소록(Set)에 링킹 연산 수행
     summary_str = json.dumps(summary_result, ensure_ascii=False)
@@ -113,4 +112,4 @@ async def process_and_save_alerts(payload: dict, affected_user_ids: list):
         if inserted :
             await redis_client.expire(user_incident_set_key, 172800)
         
-    logger.info(f"[mas02 alert.py Reroute Notification] 총 {len(affected_user_ids)}명의 유저 알림창에 사건 [{incident_id}] 배달 완료.")
+    config.logger.info(f"[mas02 alert.py Reroute Notification] 총 {len(affected_user_ids)}명의 유저 알림창에 사건 [{incident_id}] 배달 완료.")
