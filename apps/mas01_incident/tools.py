@@ -1,8 +1,9 @@
 # apps/mas01_incident/tools.py
 import hashlib
-import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import requests
+import asyncio # ◀ 스레드 풀 격리를 위해 추가
 
 import geopandas as gpd
 from shapely.ops import nearest_points
@@ -10,8 +11,6 @@ from shapely.ops import nearest_points
 from typing import Dict, Any, Tuple, Optional
 import config
 
-# 국가 표준 시군구코드(5자리)를 시/구 명칭으로 디코딩하기 위한 매핑 딕셔너리
-# 서울시 25개 구 예시 (프로젝트 범위에 따라 타 시도 코드를 확장해 나가시면 됩니다)
 ADMIN_DISTRICT_MAP = {
     "11110": ("서울특별시", "종로구"), "11140": ("서울특별시", "중구"),
     "11170": ("서울특별시", "용산구"), "11200": ("서울특별시", "성동구"),
@@ -28,10 +27,6 @@ ADMIN_DISTRICT_MAP = {
 }
 
 def get_si_gu_from_row(row: Any) -> Tuple[Optional[str], Optional[str]]:
-    """
-    SHP 행(Row) 속성에서 행정구역 코드를 찾아 (시, 구) 한글 명칭 튜플을 반환합니다.
-    """
-    # MOCT 데이터 버전에 따라 SGG_ID, SGG_CD, 이외의 명칭일 수 있으니 존재 여부 체크
     sgg_col = next((col for col in ['SGG_ID', 'SGG_CD'] if col in row.index), None)
     if sgg_col:
         code = str(row[sgg_col])
@@ -41,6 +36,10 @@ def get_si_gu_from_row(row: Any) -> Tuple[Optional[str], Optional[str]]:
 
 async def check_duplicate(incident_data: dict, mode: str) -> bool:
     try:
+        # 💡 안전 보장: 글로벌 레디스가 아직 준비 안 되었으면 무조건 통과시킴
+        if not config.redis_client:
+            return True
+
         info_text = None
         if mode == "redis" :
             info_text = str(incident_data.get("info", "")).strip()
@@ -59,16 +58,19 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
         
         ttl_seconds = None
         end_time_str = incident_data.get("endDateTime") if mode == "redis" else str(incident_data.get("end_datetime"))
+        
         if end_time_str:
             try:
-                end_dt = datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S")
-                time_delta = (end_dt - datetime.strptime("2026-05-20 13:00:00", "%Y-%m-%d %H:%M:%S")).total_seconds()
+                # 💡 [교정 1] 하드코딩된 과거 날짜 대신, 현재 KST 시스템 시각 기준으로 실시간 캐싱 기간을 연산합니다.
+                end_dt = datetime.strptime(end_time_str.replace("T", " "), "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Seoul"))
+                now_dt = datetime.now(ZoneInfo("Asia/Seoul"))
+                time_delta = (end_dt - now_dt).total_seconds()
+                
                 if time_delta <= 0:
                     return False
-                
-                ttl_seconds = max(int(time_delta), 0)
-            except ValueError:
-                pass
+                ttl_seconds = max(int(time_delta), 600) # 최소 10분은 보장
+            except Exception:
+                ttl_seconds = 3600 # 파싱 에러 발생 시 기본 1시간 캐싱 기본 세팅
         
         is_new = await config.redis_client.set(
             name=dedup_key,
@@ -76,15 +78,18 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
             ex=ttl_seconds,
             nx=True
         )
-        config.logger.info(f"[MAS01 tools.py check_duplicate] redis에 dedup 생성")
+        config.logger.info(f"[MAS01 tools.py check_duplicate] 중복 체크 결과 완료 (신규 여부: {bool(is_new)})")
         return bool(is_new)
     except Exception as e:
         config.logger.error(f"[Check Duplicate Error] 예외 발생: {e}")
-        return False
+        return True # 에러가 나면 유실 방지를 위해 신규 데이터로 판정함
 
 def to_wgs84(geom) -> Tuple[float, float]:
-    series = gpd.GeoSeries([geom], crs="EPSG:5179").to_crs(epsg=4326)
-    return float(series.iloc[0].y), float(series.iloc[0].x)
+    try :
+        series = gpd.GeoSeries([geom], crs="EPSG:5179").to_crs(epsg=4326)
+        return float(series.iloc[0].y), float(series.iloc[0].x)
+    except : 
+        return None, None
 
 async def resolve_linear_reference(road_name, anchor_node, offset_start, offset_end) -> Optional[Dict[str, Any]] :
     link_gdf = config.LINK_GDF
@@ -98,9 +103,7 @@ async def resolve_linear_reference(road_name, anchor_node, offset_start, offset_
     road_links = link_gdf[link_gdf[link_col].str.contains(road_name, na=False)]
     
     if not node_match.empty and not road_links.empty:
-        # 💡 시/구 정보 추출
         si, gu = get_si_gu_from_row(node_match.iloc[0])
-        
         road_line = road_links.geometry.unary_union
         geom_on_road, _ = nearest_points(road_line, node_match.iloc[0].geometry)
         
@@ -114,26 +117,25 @@ async def resolve_linear_reference(road_name, anchor_node, offset_start, offset_
 
 async def resolve_between_nodes(road_name: Optional[str], start_node: str, end_node: str) -> Optional[Dict[str, Any]]:
     node_gdf = config.NODE_GDF
-    node_col = 'NODE_NAME' if 'NODE_NAME' in node_gdf.columns else 'NODE_NM'
+    for replace_word in ["일대", "부근", "인근"]:
+        start_node = start_node.replace(replace_word, '')
+        end_node = end_node.replace(replace_word, '')
     
+    node_col = 'NODE_NAME' if 'NODE_NAME' in node_gdf.columns else 'NODE_NM'
     s_match = node_gdf[node_gdf[node_col].str.contains(start_node, na=False)]
     e_match = node_gdf[node_gdf[node_col].str.contains(end_node, na=False)]
     
-    # 케이스 1: SHP 노드 데이터에 둘 다 온전하게 매칭되는 정석적인 경우
     if not s_match.empty and not e_match.empty:
         si, gu = get_si_gu_from_row(s_match.iloc[0])
         s_lat, s_lng = to_wgs84(s_match.iloc[0].geometry)
         e_lat, e_lng = to_wgs84(e_match.iloc[0].geometry)
         return {"lat": (s_lat + e_lat) / 2, "lng": (s_lng + e_lng) / 2, "si": si, "gu": gu}
     
-    # 케이스 2: 시작 노드만 SHP에 매칭되는 경우
     elif not s_match.empty and e_match.empty:
         si, gu = get_si_gu_from_row(s_match.iloc[0])
         lat, lng = to_wgs84(s_match.iloc[0].geometry)
         return {"lat": lat, "lng": lng, "si": si, "gu": gu}
     
-    # 🎯 [결정적 보정] GeoDataFrame 객체의 공백 유무 검증은 무조건 '.empty'를 붙여야 안 터집니다.
-    # SHP DB에 노드가 없어서 비어있다면(.empty가 True라면) 카카오 키워드 검색 백업 가동!
     if s_match.empty:
         si, gu, s_lat, s_lng = await kakao_keyword_to_latlng(start_node)
     else:
@@ -146,7 +148,6 @@ async def resolve_between_nodes(road_name: Optional[str], start_node: str, end_n
         si, gu = get_si_gu_from_row(e_match.iloc[0])
         e_lat, e_lng = to_wgs84(e_match.iloc[0].geometry)
         
-    # 둘 다 정상적으로 위경도 좌표(SHP 또는 Kakao)가 확보 완료되었다면 중심점 반환
     if s_lat and e_lat:
         return {"lat": (float(s_lat) + float(e_lat)) / 2, "lng": (float(s_lng) + float(e_lng)) / 2, "si": si, "gu": gu}
     elif s_lat:
@@ -160,19 +161,28 @@ async def resolve_address_point(address:str) -> Optional[Dict[str, Any]] :
     match_nodes = node_gdf[node_gdf['NODE_NAME'].str.contains(dong_name, na=False)]
     
     if not match_nodes.empty:
-        # 💡 발견된 첫 매칭 노드의 행정구역 활용
         si, gu = get_si_gu_from_row(match_nodes.iloc[0])
-        
         center = match_nodes.geometry.unary_union.centroid
         lat, lng = to_wgs84(center)
         return {"lat": lat, "lng": lng, "si": si, "gu": gu}
+    else :
+        try :
+            # 💡 [교정 2] 동기식 주소 변환 함수를 비동기 스레드 풀에서 안전하게 돌려 루프 정체를 차단합니다.
+            res = await asyncio.get_running_loop().run_in_executor(None, kakao_address_to_latlng, address)
+            if res:
+                si, gu, y, x = res
+                return {"lat" : y, "lng" : x, "si" : si, "gu" : gu}
+        except Exception as e :
+            return None
     return None
 
 async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
-    """분석이 완료된 데이터를 서울시 구별 Pub/Sub 채널로 Broadcast"""
-    final_si = "서울특별시" if "서울" in si_name else si_name
+    if not config.redis_client:
+        return
+        
+    final_si = "서울특별시" if "서울" in str(si_name) else si_name
     final_gu = gu_name if gu_name else "미분류"
-    if final_gu[-1] != '구' :
+    if final_gu and final_gu[-1] != '구' :
         final_gu += '구'
     stream_key = f"incident:stream:{final_si}:{final_gu}"
     
@@ -184,13 +194,11 @@ async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
         "location_type": str(enriched_data.get("location_type", "")),
         "lat": str(enriched_data.get("lat", "")),
         "lng": str(enriched_data.get("lng", "")),
-        "si": final_si,
-        "gu": final_gu,
+        "si": str(final_si),
+        "gu": str(final_gu),
         "startDateTime": str(enriched_data.get("startDateTime", "")),
         "endDateTime": str(enriched_data.get("endDateTime", "")),
         "content": str(enriched_data.get("content", "")),
-        
-        # details 내부의 값들을 1차원으로 꺼내서 배치
         "road_name": str(details_data.get("road_name", "")),
         "start_node": str(details_data.get("start_node", "")),
         "end_node": str(details_data.get("end_node", "")),
@@ -200,76 +208,54 @@ async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
         "address": str(details_data.get("address", ""))
     }
     
-    config.logger.info(f"[MAS01 Tools.py] {stream_key} 스트림 발행 : {flat_data['affected']} {flat_data['content']}")
+    config.logger.info(f"[MAS01 Tools.py] {stream_key} 스트림 발행 완료 : {flat_data['affected']}")
     await config.redis_client.xadd(name=stream_key, fields=flat_data)
 
-# @tool
 async def kakao_keyword_to_latlng(keyword) :
-    """
-    입력 : 키워드
-    출력 : x, y (위도, 경도)
-    """
-    
     url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-    headers = {
-        "Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"
-    }
-    params = {
-        "query" : keyword
-    }
+    headers = {"Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"}
+    params = {"query" : keyword}
     
     try : 
-        response = requests.get(url, headers=headers, params=params)
-        
+        # requests.get을 비동기 스레드 풀 격리 처리
+        response = await asyncio.get_running_loop().run_in_executor(
+            None, lambda: requests.get(url, headers=headers, params=params, timeout=5.0)
+        )
         response.raise_for_status()
-        
         data = response.json()
         
         output = None
-        for doro in data['documents'] :
-            if '교통,수송' in doro['category_name'] :
+        for doro in data.get('documents', []) :
+            if '교통,수송' in doro.get('category_name', '') :
                 output = doro
                 break
-            elif doro['place_name'] == ''.join(keyword.split(' ')) :
+            elif doro.get('place_name', '').replace(' ', '') == keyword.replace(' ', ''):
                 output = doro
                 break
-        address = output['address_name'].split(' ')
-        si = address[0]
-        gu = address[1]
-        return (si, gu, output['y'], output['x'])
-    
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTP 에러 발생: {e}")
-        return None
-    
-    except Exception as e:
-        print(f"기타 에러 발생: {e}")
-        return None
+        if not output and data.get('documents'):
+            output = data['documents'][0]
+            
+        if output:
+            address = output['address_name'].split(' ')
+            return (address[0], address[1], output['y'], output['x'])
+    except Exception:
+        pass
+    return ("서울특별시", "미분류", None, None)
 
-# @tool
-# async def get_seoul_roadname_latlng(roadname) :
-#     """
-#     입력 : 도로 이름 (예 : 올림픽대로)
-#     출력 : 위도, 경도
-#     """
+async def kakao_address_to_latlng(keyword) :
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {"Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"}
+    params = {"query" : keyword}
     
-#     url = f"https://apis.data.go.kr/B553774/RoadGPSInfo/getRoadGPSInfoQry?serviceKey={config.SEOUL_ROADNAME_API}&pageNo=1&numOfRows=10&proadlinename={roadname}"
-
-#     try : 
-#         response = requests.get(url)
+    try : 
+        response = requests.get(url, headers=headers, params=params, timeout=5.0)
+        response.raise_for_status()
+        data = response.json()
         
-#         response.raise_for_status()
-        
-#         data = response.json()
-        
-#         return data
-        
-#     except requests.exceptions.HTTPError as e:
-#         print(f"HTTP 에러 발생: {e}")
-#         return None
-#     except Exception as e:
-#         print(f"기타 에러 발생: {e}")
-#         return None
-    
-
-
+        if data.get('documents'):
+            output = data['documents'][0]
+            address = output['address_name'].split(' ')
+            return (address[0], address[1], output['y'], output['x'])
+    except Exception:
+        pass
+    return ("서울특별시", "미분류", None, None)

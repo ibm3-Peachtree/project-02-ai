@@ -581,7 +581,7 @@ class TransportApp:
             print(f"❌ Neo4j 쿼리 3 실행 에러: {e}")
             return []
     
-    def format_perfect_routing_paths(self, records):
+    async def format_perfect_routing_paths(self, records):
         if not records: return []
         
         path_groups = defaultdict(list)

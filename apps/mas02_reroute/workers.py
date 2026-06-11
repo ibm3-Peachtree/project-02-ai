@@ -25,24 +25,23 @@ async def redis_incident_consumer_and_rerouter():
     CONSUMER_NAME = "mas02_worker"
     
     stream_keys = [f"incident:stream:서울특별시:{gu}" for gu in SEOUL_GUS]
-    redis_client = config.redis_client
     
     config.logger.info("[MAS02 Worker] 테스트를 위해 컨슈머 그룹 초기화를 시작합니다...")
     for stream_key in stream_keys:
             try:
                 # ❌ 원본 데이터를 파괴하던 delete 구문만 주석 처리하여 사살합니다.
-                # await redis_client.delete(stream_key)
+                # await config.redis_client.delete(stream_key)
                 
                 # 컨슈머 그룹만 폭파했다가 아래에서 id="0"으로 재생성하므로 
                 # 큐에 쌓여있던 기존 데이터를 처음부터 다시 읽어오게 됩니다.
-                await redis_client.xgroup_destroy(stream_key, GROUP_NAME)
+                await config.redis_client.xgroup_destroy(stream_key, GROUP_NAME)
                 config.logger.info(f"[MAS02 Worker] 기존 그룹 삭제 완료: {stream_key}")
             except Exception:
                 pass
     
     for stream_key in stream_keys:
         try:
-            await redis_client.xgroup_create(stream_key, GROUP_NAME, id="0", mkstream=True)
+            await config.redis_client.xgroup_create(stream_key, GROUP_NAME, id="0", mkstream=True)
             config.logger.info(f"[MAS02 Init] 컨슈머 그룹 생성 완료: {stream_key}")
         except Exception as e:
             if "BUSYGROUP" in str(e):
@@ -51,14 +50,14 @@ async def redis_incident_consumer_and_rerouter():
     
     config.logger.info("[MAS02 worekrs.py redis_incident_consumer_and_rerouter] 서울시 25개 구 사고 스트림 동시 관제를 시작합니다... 무전 대기 중.")
     
-    asyncio.create_task(patrol_active_incidents_loop(stream_keys, redis_client, GROUP_NAME))
+    asyncio.create_task(patrol_active_incidents_loop(stream_keys))
     
     while True:
         try:
             streams_dict = {stream_key: ">" for stream_key in stream_keys}
             
             # 새로운 메시지 유입(XREADGROUP) 이벤트 리스닝에만 집중합니다.
-            response = await redis_client.xreadgroup(
+            response = await config.redis_client.xreadgroup(
                 groupname=GROUP_NAME,
                 consumername=CONSUMER_NAME,
                 streams=streams_dict,
@@ -99,7 +98,7 @@ async def redis_incident_consumer_and_rerouter():
                                         if processed_nodes:
                                             try:    
                                                 # Redis 인메모리 Key-Value 스냅샷 SET 기동
-                                                await redis_client.set(name=key, value=processed_nodes)
+                                                await config.redis_client.set(name=key, value=processed_nodes)
                                                 
                                                 # TTL 계산 (endTime - 현재 시간)
                                                 end_date_str = payload.get("endDateTime")
@@ -110,7 +109,7 @@ async def redis_incident_consumer_and_rerouter():
                                                 if remaining_seconds <= 0:
                                                     remaining_seconds = 1
                                                     
-                                                await redis_client.expire(key, remaining_seconds)
+                                                await config.redis_client.expire(key, remaining_seconds)
                                                 config.logger.info(f"[MAS02 workers.py Redis Sync] 유저 {user_id}의 실시간 복합 사고 노드 {len(processed_nodes)}건 적재 완료.")
                                                 
                                             except Exception as redis_err:
@@ -123,7 +122,7 @@ async def redis_incident_consumer_and_rerouter():
                                         continue
                                     
                                     reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
-                                    await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
+                                    await config.redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
                                     config.logger.info(f"[MAS02 workers][History Mark] 유저 {user_id} 우회 플래그 캐싱 완료.")
                                 
                         await config.redis_client.xack(stream_key, GROUP_NAME, message_id)
@@ -140,7 +139,7 @@ async def redis_incident_consumer_and_rerouter():
             await asyncio.sleep(5)
 
 
-async def patrol_active_incidents_loop(stream_keys, redis_client, group_name):
+async def patrol_active_incidents_loop(stream_keys):
     """
     [MAS02 순찰 스케줄러 태스크]
     지워지지 않고 스트림에 남은 과거 통제 건에 대해 중간에 진입한 유저를 15초 주기로 추적합니다.
@@ -153,7 +152,7 @@ async def patrol_active_incidents_loop(stream_keys, redis_client, group_name):
             await asyncio.sleep(15)
             
             for stream_key in stream_keys:
-                active_messages = await redis_client.xrange(stream_key, min="-", max="+")
+                active_messages = await config.redis_client.xrange(stream_key, min="-", max="+")
                 
                 if not active_messages:
                     continue
@@ -172,7 +171,7 @@ async def patrol_active_incidents_loop(stream_keys, redis_client, group_name):
                                 config.logger.warning(f"[MAS02 workers.py redis_incident_consumer_and_rerouter][순찰 저격 성공] 통제 도중 중간 난입한 유저 포착: {affected_user_ids}")
                                 
                                 meta_key = f"incident:meta:{incident_id}"
-                                cached_meta = await redis_client.get(meta_key)
+                                cached_meta = await config.redis_client.get(meta_key)
                                 
                                 result = None
                                 if cached_meta:
@@ -209,7 +208,7 @@ async def patrol_active_incidents_loop(stream_keys, redis_client, group_name):
                                         if processed_nodes:
                                             try:    
                                                 # Redis 인메모리 Key-Value 스냅샷 SET 기동
-                                                await redis_client.set(name=key, value=processed_nodes)
+                                                await config.redis_client.set(name=key, value=processed_nodes)
                                                 
                                                 # TTL 계산 (endTime - 현재 시간)
                                                 end_date_str = payload.get("endDateTime")
@@ -220,7 +219,7 @@ async def patrol_active_incidents_loop(stream_keys, redis_client, group_name):
                                                 if remaining_seconds <= 0:
                                                     remaining_seconds = 1
                                                     
-                                                await redis_client.expire(key, remaining_seconds)
+                                                await config.redis_client.expire(key, remaining_seconds)
                                                 config.logger.info(f"[MAS02 workers.py Redis Sync] 유저 {user_id}의 실시간 복합 사고 노드 {len(processed_nodes)}건 적재 완료.")
                                                 
                                             except Exception as redis_err:
@@ -233,7 +232,7 @@ async def patrol_active_incidents_loop(stream_keys, redis_client, group_name):
                                         continue
                                 
                                     reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
-                                    await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
+                                    await config.redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
                                     config.logger.info(f"[MAS02 workers][History Mark] 유저 {user_id} 우회 플래그 캐싱 완료.")
                                     
         except asyncio.CancelledError:

@@ -20,7 +20,7 @@ def extract_json_array(raw_text):
         json_string = match.group(0) # 매칭된 [ { ... } ] 부분만 추출
         return json_string
     else:
-        return None
+        return "[]"
 
 async def run_vllm(instruction, topis, entity=None) :
     global kanana_client

@@ -25,12 +25,11 @@ class ReroutingAgentState(TypedDict) :
 async def fetch_user_realtime_context(state: ReroutingAgentState) -> Dict[str, Any]:
     user_id = state["user_id"]
     incident_id = state["incident_id"]
-    redis_client = config.redis_client
     
     config.logger.info(f"[MAS02 agents.py][Step 1] 유저 {user_id}의 GPS-경로 인덱스 정밀 동기화...")
     
     # 1. GPS 로그 파싱
-    raw_list = await redis_client.lrange(f"location:user:{user_id}", 0, -1)
+    raw_list = await config.redis_client.lrange(f"location:user:{user_id}", 0, -1)
     user_current_gps = []
     if raw_list:
         user_current_gps = [json.loads(r.decode('utf-8')) if isinstance(r, bytes) else json.loads(r) for r in raw_list]
@@ -55,9 +54,8 @@ async def fetch_user_realtime_context(state: ReroutingAgentState) -> Dict[str, A
 
     # 2. 사고 메타 데이터 확보
     incident_meta = await get_incident_meta_data(incident_id)
-    incident_content = incident_meta.get("incident", "서울역 일대 통제") if incident_meta else "통제 발생"
+    incident_content = incident_meta.get("incident") if incident_meta else "통제 발생"
     
-    # LLM이 딴눈 팔지 못하도록 현재 인덱스와 유효 범위를 명확히 규격화하여 컨텍스트화합니다.
     user_init = {
         "user_gps": user_current_gps[-3:],  # 최근 3개 스냅샷만 압축해서 전달
         "user_live_route_xy": user_live_route_xy,
@@ -225,34 +223,31 @@ async def generate_and_format_routes(state: ReroutingAgentState) -> List[Dict[st
     start_node = nodes.get("start_node_id")
     end_node = nodes.get("end_node_id")
     
-    # app = TransportApp()
-    app = config.app
-    
-    # await app.delete_gds_graph()
-    # await app.build_gds_graph1()
-    # await app.build_gds_graph2()
-    # await app.build_gds_graph3()
+    # await config.app.delete_gds_graph()
+    # await config.app.build_gds_graph1()
+    # await config.app.build_gds_graph2()
+    # await config.app.build_gds_graph3()
     
     combined_records = []
     path_counter = 0
     
     # 🎯 [수정] 경로 탐색 쿼리들도 async def 스펙이므로 await를 적용해 결과를 패칭합니다.
-    query_1_result = await app.get_optimal_path1(start_node, end_node)
+    query_1_result = await config.app.get_optimal_path1(start_node, end_node)
     for r in query_1_result:
         r['path_idx'] = path_counter; combined_records.append(r); path_counter += 1
         
-    query_2_result = await app.get_optimal_path2(start_node, end_node)
+    query_2_result = await config.app.get_optimal_path2(start_node, end_node)
     for r in query_2_result:
         r['path_idx'] = path_counter; combined_records.append(r); path_counter += 1
         
-    query_3_result = await app.get_optimal_path3(start_node, end_node)
+    query_3_result = await config.app.get_optimal_path3(start_node, end_node)
     for r in query_3_result:
         r['path_idx'] = path_counter; combined_records.append(r); path_counter += 1
         
     config.logger.info(f"독립 3-Query 최적 원본 레코드 취합 완료 (총 후보군: {len(combined_records)})") 
     
     # format_perfect_routing_paths는 순수 연산 함수(동기식)이므로 기존 구조 유지
-    final_routes = app.format_perfect_routing_paths(combined_records)
+    final_routes = await config.app.format_perfect_routing_paths(combined_records)
     
     config.logger.info(f"[MAS02 routes 1]\n {final_routes}")
     

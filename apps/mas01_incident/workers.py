@@ -9,8 +9,8 @@ import aiomysql
 
 import config
 from apps.mas01_incident.tools import check_duplicate
-from apps.mas01_incident.agents import mas01_agent
-
+# from apps.mas01_incident.agents import mas01_agent
+from apps.mas01_incident.agents_new import mas01_agent
 SEOUL_GUS = [
     "강남구", "강동구", "강북구", "강서구", "관악구", "광진구", "구로구", "금천구",
     "노원구", "도봉구", "동대문구", "동작구", "마포구", "서대문구", "서초구", "성동구",
@@ -24,39 +24,49 @@ async def redis_topis_listener():
     GROUP_NAME = "mas01_consumer_group"
     CONSUMER_NAME = "mas01_worker_stream"
     
-    redis_client = config.redis_client
+    print("🚨 [CRITICAL DEBUG] >>> 지금 redis_topis_listener 워커 셋업 코드가 작동하기 시작합니다! <<<", flush=True)
     
     config.logger.info("[MAS01 Worker 1] [최초 1회 인프라 셋업] 컨슈머 그룹 초기화를 시작합니다...")
     
     kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
     today_str = kst_now.strftime("%Y%m%d")
     
-    stream_keys = [f"incident:서울특별시:{gu}:{today_str}.stream" for gu in SEOUL_GUS]
+    # stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
+    stream_keys = ["incident:서울특별시:중구:20260611:stream"]
     
-    for stream_key in stream_keys:
-        try:
-            await redis_client.xgroup_destroy(stream_key, GROUP_NAME)
-            config.logger.info(f"기존 그룹 삭제 완료: {stream_key}")
-        except Exception:
-            pass
-            
-    for stream_key in stream_keys:
-        try:
-            await redis_client.xgroup_create(stream_key, GROUP_NAME, id="0", mkstream=True)
-            config.logger.info(f"컨슈머 그룹 생성 완료: {stream_key}")
-        except Exception:
-            pass
+    IS_TEST_MODE = True 
     
+    if IS_TEST_MODE:
+        config.logger.info("[MAS01 Worker 1] ⚠️ 테스트 모드 활성화: 기존 컨슈머 그룹을 파괴하고 처음부터 재탐색합니다.")
+        for stream_key in stream_keys:
+            try:
+                await config.redis_client.xgroup_destroy(stream_key, GROUP_NAME)
+            except Exception:
+                pass
+            try:
+                # id="0" 으로 생성하여 과거 데이터도 처음부터 읽어옴
+                await config.redis_client.xgroup_create(stream_key, GROUP_NAME, id="0", mkstream=True)
+            except Exception:
+                pass
+    else:
+        for stream_key in stream_keys:
+            try:
+                await config.redis_client.xgroup_create(stream_key, GROUP_NAME, id="$", mkstream=True)
+            except Exception:
+                pass
+    
+    config.logger.info("[MAS01 Worker 1] 셋업 완료. 무전 대기 및 실시간 수집 루프 가동합니다.")
+
     while True:
         try:
             streams_dict = {stream_key: ">" for stream_key in stream_keys}
             
-            response = await redis_client.xreadgroup(
+            response = await config.redis_client.xreadgroup(
                 groupname=GROUP_NAME,
                 consumername=CONSUMER_NAME,
                 streams=streams_dict,
                 count=5,
-                block=10000
+                block=500 
             )
             
             if response:
@@ -76,19 +86,19 @@ async def redis_topis_listener():
                             initial_state = {"raw_incident_data": incident_data}
                             final_state = await mas01_agent.ainvoke(initial_state)
                             
-                            processed_nodes = final_state.get("affected_nodes", [])
+                            processed_nodes = final_state.get("final_outputs", [])
                             config.logger.info("[Stream Worker : Redis] : Node 처리 완료")
                             
                             for node in processed_nodes: 
                                 config.logger.info(f"   장소: {node['affected']} | 좌표: ({node['lat']}, {node['lng']}) | 기간: {node['startDateTime']} ~ {node['endDateTime']}")
                             
-                            await redis_client.xack(stream_key, GROUP_NAME, message_id)
+                            await config.redis_client.xack(stream_key, GROUP_NAME, message_id)
                         
                         else:
                             config.logger.info(f"[Stream Worker] 중복된 돌발 상황건으로 판명되어 스킵 및 ACK 처리합니다.")
-                            await redis_client.xack(stream_key, GROUP_NAME, message_id)
+                            await config.redis_client.xack(stream_key, GROUP_NAME, message_id)
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
         except asyncio.CancelledError:
             config.logger.info("[MAS01 Worker 1] 서버 정지로 인해 스트림 리스너를 종료합니다.")
@@ -100,9 +110,7 @@ async def redis_topis_listener():
 async def mysql_topis_listener():
     """
     [Worker 2] MySQL의 비정형 공지사항 테이블을 주기적으로 감시하는 백그라운드 태스크
-    """
-    mysql_pool = config.mysql_pool
-    
+    """    
     while True:
         try:
             # 1. 현재 시스템 KST 시각 확보 (%Y-%m-%d %H:%M:%S 형식)
@@ -116,7 +124,7 @@ async def mysql_topis_listener():
                   AND end_datetime > %s
             """
             
-            async with mysql_pool.acquire() as conn:
+            async with config.mysql_pool.acquire() as conn:
                 async with conn.cursor(aiomysql.DictCursor) as cur:
                     # 쿼리의 %s 자리에 동일한 현재 시각 스트링을 각각 매핑합니다.
                     await cur.execute(sql, (current_time, current_time))
@@ -132,7 +140,7 @@ async def mysql_topis_listener():
                     initial_state = {"raw_incident_data": result}
                     final_state = await mas01_agent.ainvoke(initial_state)
                     
-                    processed_nodes = final_state.get("affected_nodes", [])
+                    processed_nodes = final_state.get("final_outputs", [])
                     config.logger.info("[Stream Worker : MySQL] : Node 처리 완료")
                     
                     for node in processed_nodes: 
@@ -152,9 +160,7 @@ async def redis_stream_end_time_cleaner():
     """
     [Background DB Cleaner]
     5분마다 돌면서 endDateTime이 지난 만료된 대중교통 통제 데이터를 추적
-    """
-    redis_client = config.redis_client
-    
+    """    
     neo4j_purge_cypher = """
         MATCH (i:Incident {id: $incident_id})
         DETACH DELETE i
@@ -169,7 +175,7 @@ async def redis_stream_end_time_cleaner():
             
             for gu in SEOUL_GUS:
                 stream_key = f"incident:stream:서울특별시:{gu}"
-                expired_messages = await redis_client.xrange(stream_key, min="-", max=str(current_ts_ms))
+                expired_messages = await config.redis_client.xrange(stream_key, min="-", max=str(current_ts_ms))
                 
                 if not expired_messages:
                     continue
@@ -199,7 +205,7 @@ async def redis_stream_end_time_cleaner():
                                 config.logger.error(f"[MAS01 Worker3 Neo4j Auto-Purge Error] '{affected_place}' 노드 제거 실패: {ne}")
                                 continue 
                         
-                        await redis_client.xdel(stream_key, message_id)
+                        await config.redis_client.xdel(stream_key, message_id)
                         config.logger.info(f"[MAS01 Worker3 Redis Stream Cleaner] 스트림 메시지 XDEL 완료 (MsgID: {message_id})")
                         
         except asyncio.CancelledError:

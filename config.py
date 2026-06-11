@@ -1,4 +1,4 @@
-# config.py (전면 보정본)
+# config.py
 
 import os
 import logging
@@ -10,10 +10,13 @@ import redis.asyncio as aioredis
 from neo4j import AsyncGraphDatabase
 import aiomysql
 import geopandas as gpd
+import sshtunnel
 
 load_dotenv()
 
-# [수정] uvicorn 의존성을 완전히 제거하고, 데몬 전용 독립 로거를 명시적으로 빌드합니다.
+sshtunnel.SSH_TIMEOUT = 5.0
+sshtunnel.TUNNEL_TIMEOUT = 5.0
+
 logger = logging.getLogger("pipeline_daemon")
 logger.setLevel(logging.INFO)
 
@@ -84,10 +87,15 @@ async def init_db_connections():
     global ssh_tunnel_redis, ssh_tunnel_neo4j, ssh_tunnel_mysql
     global redis_client, neo4j_client, mysql_pool
     
+    print("📢 [CRITICAL DEBUG] >>> 지금 init_db_connections()가 실행되어 Redis 객체를 생성합니다! <<<", flush=True)
+    
     loop = asyncio.get_running_loop()
 
     try:
-        # 1. Redis SSH 터널 셋업
+        # 💡 [핵심 교정 2] 에러를 내던 엉뚱한 인자들을 제거하고 순수 핵심 아규먼트만 남깁니다.
+        # 타임아웃은 상단에 선언한 글로벌 변수(sshtunnel.SSH_TIMEOUT)가 자동으로 대리 적용합니다.
+        
+        # 1. Redis SSH 터널
         ssh_tunnel_redis = SSHTunnelForwarder(
             (BASTION_HOST, 22),
             ssh_username=BASTION_USER,
@@ -95,13 +103,14 @@ async def init_db_connections():
             remote_bind_address=(REDIS_HOST, int(REDIS_PORT)),
             local_bind_address=('127.0.0.1', int(REDIS_LOCAL_BIND_PORT)),
             set_keepalive=10,
+            allow_agent=False,
             host_pkey_directories=[]
         )
         logger.info("[Infra 셋업] 1. Redis SSH 터널 연결 시도 중...")
         await loop.run_in_executor(None, ssh_tunnel_redis.start)
         logger.info("config.init_db_connections : 1 Redis SSH 터널 활성화 성공")
         
-        # 2. Neo4j SSH 터널 셋업
+        # 2. Neo4j SSH 터널
         ssh_tunnel_neo4j = SSHTunnelForwarder(
             (BASTION_HOST, 22),
             ssh_username=BASTION_USER,
@@ -109,12 +118,13 @@ async def init_db_connections():
             remote_bind_address=(NEO4J_HOST, int(NEO4J_PORT)),
             local_bind_address=('127.0.0.1', int(NEO4J_LOCAL_BIND_PORT)),
             set_keepalive=10,
+            allow_agent=False
         )
         logger.info("[Infra 셋업] 2. Neo4j SSH 터널 연결 시도 중...")
         await loop.run_in_executor(None, ssh_tunnel_neo4j.start)
         logger.info("config.init_db_connections : 2 Neo4j SSH 터널 활성화 성공")
         
-        # 3. MySQL SSH 터널 셋업
+        # 3. MySQL SSH 터널
         ssh_tunnel_mysql = SSHTunnelForwarder(
             (BASTION_HOST, 22),
             ssh_username=BASTION_USER,
@@ -122,6 +132,7 @@ async def init_db_connections():
             remote_bind_address=(MYSQL_HOST, int(MYSQL_PORT)),
             local_bind_address=('127.0.0.1', int(MYSQL_LOCAL_BIND_PORT)),
             set_keepalive=10,
+            allow_agent=False
         )
         logger.info("[Infra 셋업] 3. MySQL SSH 터널 연결 시도 중...")
         await loop.run_in_executor(None, ssh_tunnel_mysql.start)
@@ -130,7 +141,7 @@ async def init_db_connections():
     except Exception as tunnel_err:
         logger.error(f"[Critical Error] SSH 터널링 구동 실패: {tunnel_err}")
         raise
-
+    
     try:
         local_redis_port = ssh_tunnel_redis.local_bind_port
         redis_client = aioredis.from_url(

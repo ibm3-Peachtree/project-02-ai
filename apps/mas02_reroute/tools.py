@@ -58,11 +58,10 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
     Redis의 XY 경로 키들을 SCAN하여 최신 스냅샷을 추린 뒤,
     사고 통제 좌표와 정확히 일치하는 정류소/역을 밟는 유저 리스트(recoId)를 반환합니다.
     """
-    redis_client = config.redis_client
     user_latest_keys = {}
 
     match_pattern = "routine:live:xy:user:*"
-    keys = await redis_client.keys(match_pattern)
+    keys = await config.redis_client.keys(match_pattern)
     
     if keys:
         for key in keys:
@@ -73,19 +72,19 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
             user_id = tokens[4]
             user_latest_keys[user_id] = {"key": key}
                 
-    config.logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명")
+    config.logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명\n incident_id : {incident_id}")
 
     affected_user_reco_ids = []
     affected_user_xy = []
 
     for user_id, info in user_latest_keys.items():
         reroute_history_key = f"user:{user_id}:reroute:history:{incident_id}"
-        is_already_rerouted = await redis_client.exists(reroute_history_key)
+        is_already_rerouted = await config.redis_client.exists(reroute_history_key)
         
         if is_already_rerouted:
             continue 
 
-        raw_data = await redis_client.get(info["key"])
+        raw_data = await config.redis_client.get(info["key"])
         if not raw_data: continue
         
         if isinstance(raw_data, bytes):
@@ -138,7 +137,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
         if is_user_affected:
             affected_user_reco_ids.append(int(user_id))
             # 우회 플래그 캐싱은 실제 영향을 받은 유저(is_user_affected == True)일 때만 마킹되도록 if문 내부로 이동했습니다.
-            await redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
+            await config.redis_client.set(name=reroute_history_key, value="DONE", ex=3600*24)
             
     return affected_user_reco_ids, affected_user_xy
 
@@ -147,15 +146,13 @@ async def get_incident_meta_data(incident_id: str ) -> dict:
     Redis로부터 특정 사건의 메타(LLM 요약 및 기간) 데이터를 조회하여 
     파이썬 딕셔너리 객체로 반환합니다.
     """
-    redis_client = config.redis_client
-
     meta_key = f"incident:meta:{incident_id}"
     
     config.logger.info(f"🔍 [Redis 읽기] 사건 메타 데이터 캐시 스캔 시작: {meta_key}")
     
     try:
         # 1. Redis에서 데이터 읽어오기
-        raw_meta = await redis_client.get(meta_key)
+        raw_meta = await config.redis_client.get(meta_key)
         
         # 데이터가 아예 존재하지 않는 경우 (캐시 미스) 빈 딕셔너리 리턴
         if not raw_meta:
