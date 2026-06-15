@@ -211,22 +211,26 @@ async def publish_to_channel(gu_name: str, si_name: str, enriched_data: dict):
     config.logger.info(f"[MAS01 Tools.py] {stream_key} 스트림 발행 완료 : {flat_data['affected']}")
     await config.redis_client.xadd(name=stream_key, fields=flat_data)
 
-async def kakao_keyword_to_latlng(keyword) :
+def _execute_kakao_keyword(keyword: str):
     url = "https://dapi.kakao.com/v2/local/search/keyword.json"
     headers = {"Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"}
     params = {"query" : keyword}
-    
-    try : 
-        # requests.get을 비동기 스레드 풀 격리 처리
-        response = await asyncio.get_running_loop().run_in_executor(
-            None, lambda: requests.get(url, headers=headers, params=params, timeout=5.0)
-        )
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=2.0)
         response.raise_for_status()
-        data = response.json()
-        
+        return response.json()
+    except Exception:
+        return None
+
+async def kakao_keyword_to_latlng(keyword: str):
+    try:
+        data = await asyncio.get_running_loop().run_in_executor(None, _execute_kakao_keyword, keyword)
+        if not data:
+            return ("서울특별시", "미분류", None, None)
+            
         output = None
-        for doro in data.get('documents', []) :
-            if '교통,수송' in doro.get('category_name', '') :
+        for doro in data.get('documents', []):
+            if '교통,수송' in doro.get('category_name', ''):
                 output = doro
                 break
             elif doro.get('place_name', '').replace(' ', '') == keyword.replace(' ', ''):
@@ -242,17 +246,21 @@ async def kakao_keyword_to_latlng(keyword) :
         pass
     return ("서울특별시", "미분류", None, None)
 
-async def kakao_address_to_latlng(keyword) :
+def _execute_kakao_address(keyword: str):
     url = "https://dapi.kakao.com/v2/local/search/address.json"
     headers = {"Authorization" : f"KakaoAK {config.KAKAO_RESTAPI}"}
     params = {"query" : keyword}
-    
-    try : 
-        response = requests.get(url, headers=headers, params=params, timeout=5.0)
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=2.0)
         response.raise_for_status()
-        data = response.json()
-        
-        if data.get('documents'):
+        return response.json()
+    except Exception:
+        return None
+
+async def kakao_address_to_latlng(keyword: str):
+    try:
+        data = await asyncio.get_running_loop().run_in_executor(None, _execute_kakao_address, keyword)
+        if data and data.get('documents'):
             output = data['documents'][0]
             address = output['address_name'].split(' ')
             return (address[0], address[1], output['y'], output['x'])

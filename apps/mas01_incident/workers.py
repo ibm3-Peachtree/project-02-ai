@@ -32,7 +32,7 @@ async def redis_topis_listener():
     today_str = kst_now.strftime("%Y%m%d")
     
     # stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
-    stream_keys = ["incident:서울특별시:중구:20260611:stream"]
+    stream_keys = ["incident:서울특별시:강북구:20260615:stream"]
     
     IS_TEST_MODE = True 
     

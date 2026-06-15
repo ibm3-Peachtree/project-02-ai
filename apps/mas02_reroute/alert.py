@@ -78,29 +78,29 @@ async def process_and_save_alerts(payload: dict, affected_user_ids: list):
     2. 영향권 아래 놓인 유저들의 Set 주소록에 사건 ID 꽂아 넣기.
     """
     incident_id = payload.get("incident_id")
-    # meta_key = f"incident:meta:{incident_id}"
+    meta_key = f"incident:meta:{incident_id}"
     
     # [방어막 1] 캐싱 레이어 점검 - 이미 순찰 루프나 이전 구역에서 요약한 적이 있는지 검증
-    # cached_meta = await config.redis_client.get(meta_key)
+    cached_meta = await config.redis_client.get(meta_key)
     
-    # if not cached_meta:
-    #     # 최초 발견된 사건이므로 LLM 요약 진행
-    #     summary_result = await summarize_notice(payload)
+    if not cached_meta:
+        # 최초 발견된 사건이므로 LLM 요약 진행
+        summary_result = await summarize_notice(payload)
         
-    #     # [동적 TTL 연산부] 사건 종료 시간(endDateTime)에 맞춘 수명 설정
-    #     end_time_str = payload.get("endDateTime")
-    #     try:
-    #         end_dt = datetime.datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S")
-    #         now_dt = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d : %H:%M:%S")
+        # [동적 TTL 연산부] 사건 종료 시간(endDateTime)에 맞춘 수명 설정
+        end_time_str = payload.get("endDateTime")
+        try:
+            end_dt = datetime.datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S")
+            now_dt = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d : %H:%M:%S")
             
-    #         ttl_seconds = int((end_dt - now_dt).total_seconds())
-    #     except Exception:
-    #         ttl_seconds = 86400 # 파싱 에러 방어벽: 기본 24시간 지정
-    #         # ttl_seconds = 3600
+            ttl_seconds = int((end_dt - now_dt).total_seconds())
+        except Exception:
+            ttl_seconds = 86400 # 파싱 에러 방어벽: 기본 24시간 지정
+            # ttl_seconds = 3600
             
         # 사건 메타 캐시 적재 (사건 개별 TTL 작동 개시)
-        # await config.redis_client.set(name=meta_key, value=json.dumps(summary_result, ensure_ascii=False), ex=ttl_seconds)
-        # config.logger.info(f"[mas02 alert.py Redis Save] 신규 사건 메타 캐시 완료: {incident_id} (TTL: {ttl_seconds}초)")
+        await config.redis_client.set(name=meta_key, value=json.dumps(summary_result, ensure_ascii=False), ex=ttl_seconds)
+        config.logger.info(f"[mas02 alert.py Redis Save] 신규 사건 메타 캐시 완료: {incident_id} (TTL: {ttl_seconds}초)")
         
     # 3. 영향권에 포함된 유저 리스트를 돌며 주소록(Set)에 링킹 연산 수행
     summary_str = json.dumps(payload, ensure_ascii=False)

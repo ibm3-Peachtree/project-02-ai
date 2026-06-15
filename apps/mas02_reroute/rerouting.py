@@ -641,19 +641,25 @@ class TransportApp:
                         current_seg['total_distance_m'] += row['distance']
                         current_seg['stop_count'] += 1
                         
-                        # 중복 검사 (이름 기준)
                         if to_obj['name'] not in [s['name'] for s in current_seg['stations']]:
                             current_seg['stations'].append(to_obj)
                         
                         link_buses = set()
                         if row['route_name']:
-                            link_buses = {b.strip() for b in row['route_name'].split(',') if b.strip()}
+                            # 💡 [보정 가드 추가] 5자리 이상의 순수 숫자로 된 가짜 노선명(시스템 ID)은 싹 걷어냅니다.
+                            link_buses = {
+                                b.strip() for b in row['route_name'].split(',') 
+                                if b.strip() and not (b.strip().isdigit() and len(b.strip()) >= 5)
+                            }
                         
                         if is_first_link_in_transit:
                             if link_buses: active_bus_intersection = link_buses.copy()
                             is_first_link_in_transit = False
                         else:
+                            # 💡 가짜 ID가 빠진 깨끗한 버스 번호들로만 교집합 연산을 수행합니다.
                             if link_buses: active_bus_intersection = active_bus_intersection.intersection(link_buses)
+                
+                
                 elif rel_type == 'TRANSFER':
                     if current_seg:
                         if current_seg['type'] == 'TRANSIT':

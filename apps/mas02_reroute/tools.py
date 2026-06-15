@@ -60,7 +60,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
     """
     user_latest_keys = {}
 
-    match_pattern = "routine:live:xy:user:*"
+    match_pattern = "routine:live:my:xy:user:*"
     keys = await config.redis_client.keys(match_pattern)
     
     if keys:
@@ -69,7 +69,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 key = key.decode('utf-8')
             tokens = key.split(":")
             if len(tokens) < 5: continue
-            user_id = tokens[4]
+            user_id = tokens[5]
             user_latest_keys[user_id] = {"key": key}
                 
     config.logger.info(f"[MAS02 get_active_users_by_coordinates] 1. [Redis Scan] 최신 스냅샷 매핑 완료. 활성 유저 후보군: {list(user_latest_keys.keys())}명\n incident_id : {incident_id}")
@@ -126,7 +126,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 if actual_distance <= 50.0:
                     is_user_affected = True
                     
-                    # 💡 [보정] 자료형에 상관없이 안전하게 추출된 노드 리스트(또는 원본 리스트)를 append 합니다.
+                    # [보정] 자료형에 상관없이 안전하게 추출된 노드 리스트(또는 원본 리스트)를 append 합니다.
                     affected_user_xy.append(target_nodes)
                     
                     config.logger.warning(f"[MAS02 tools.py get_active_users_by_coordinates][신규 난입 포착] 유저 {user_id}번이 통제 구역 {actual_distance:.2f}m 거리에 진입!")

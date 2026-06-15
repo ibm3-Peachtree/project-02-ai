@@ -165,7 +165,11 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
         # "subway:수도권 1호선" -> "수도권 1호선" 또는 "1호선" 추출
         raw_no = target_node.get("no", "")
         line_name = raw_no.split(":")[1].strip() if ":" in raw_no else raw_no
-        line_name = line_name.split(' ')[1]
+        try :
+            line_name = line_name.split(' ')[1]
+        except :
+            config.logger.warning("[mas02 agents.py get_subway_node_id] 올바른 line name 아님")
+            return None
         
         # 1. 먼저 호선 정보(route_id)가 명확히 살아있는 하위 노드(is_master: false)를 타겟팅.
         # 2. 하위 노드의 node_id(예: "1907_1호선") 앞부분을 잘라내어 마스터의 station_cd(예: "1907")와 매칭.
@@ -196,6 +200,52 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
             backup_res = await session.run(backup_query, name=name)
             backup_rec = await backup_res.single()
             return backup_rec["node_id"] if backup_rec else None
+    
+    async def get_arrival_node_id(target_node: Dict) -> str:
+        arr_x = target_node.get("x")
+        arr_y = target_node.get("y")
+        
+        if arr_x is None or arr_y is None:
+            config.logger.warning("⚠️ [Arrival Match] 도착 노드의 좌표가 누락되어 기본 매칭으로 우회합니다.")
+            return "MASTER_ARRIVAL_NODE_DUMMY"
+            
+        query = """
+            MATCH (m:Station {is_master: true})
+            WHERE m.x IS NOT NULL AND m.y IS NOT NULL
+            WITH m, 
+                 6371000.0 * 2.0 * atan2(
+                    sqrt(
+                        sin(radians(m.y - $target_y) / 2.0)^2 + 
+                        cos(radians($target_y)) * cos(radians(m.y)) * sin(radians(m.x - $target_x) / 2.0)^2
+                    ), 
+                    sqrt(1.0 - (sin(radians(m.y - $target_y) / 2.0)^2 + cos(radians($target_y)) * cos(radians(m.y)) * sin(radians(m.x - $target_x) / 2.0)^2))
+                 ) AS distance_m
+            WHERE distance_m <= 1000.0
+            RETURN m.node_id AS node_id, distance_m
+            ORDER BY distance_m ASC 
+            LIMIT 1
+        """
+        
+        async with config.neo4j_client.session() as session:
+            res = await session.run(query, target_x=float(arr_x), target_y=float(arr_y))
+            rec = await res.single()
+            
+            if rec:
+                config.logger.info(
+                    f"🎯 [Arrival Match 성공] 도착지 좌표와 가장 가까운 마스터 인프라 노드 탐색 성공! "
+                    f"(ID: {rec['node_id']} | 거리: {rec['distance_m']:.2f}m)"
+                )
+                return rec["node_id"]
+            else:
+                config.logger.warning("⚠️ [Arrival Match 미적중] 반경 1km 내에 마스터 노드가 없어 백업 쿼리를 구동합니다.")
+                backup_query = """
+                    MATCH (m:Station {is_master: true})
+                    WHERE m.name = "서울역" OR m.name CONTAINS "서울역"
+                    RETURN m.node_id AS node_id LIMIT 1
+                """
+                backup_res = await session.run(backup_query)
+                backup_rec = await backup_res.single()
+                return backup_rec["node_id"] if backup_rec else "MASTER_ARRIVAL_NODE_DUMMY"
 
     # 문자열 "null"이나 파이썬 None 둘 다 방어하기 위해 조건 세분화
     if start_node.get("arsID") and str(start_node.get("arsID")).lower() != "null":
@@ -208,6 +258,9 @@ async def resolve_neo4j_node_ids(state: ReroutingAgentState) -> Dict[str, Any]:
         end_node_id = await get_bus_node_id(end_node)
     else: 
         end_node_id = await get_subway_node_id(end_node)
+    
+    if not end_node_id :
+        end_node_id = await get_arrival_node_id(end_node)
     
     config.logger.info(f"[MAS02 agents.py resolve_neo4j_node_ids ID 매핑 완료] 시작 ID: {start_node_id} / 종료 ID: {end_node_id}")
     

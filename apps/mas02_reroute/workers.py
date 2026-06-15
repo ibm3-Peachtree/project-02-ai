@@ -180,7 +180,10 @@ async def patrol_active_incidents_loop(stream_keys):
                                             cached_meta = cached_meta.decode('utf-8')
                                         
                                         meta_dict = json.loads(cached_meta)
-                                        result = meta_dict.get("incident")
+                                        if isinstance(meta_dict, str):
+                                            meta_dict = json.loads(meta_dict)
+                                            
+                                        result = meta_dict 
                                         config.logger.info(f"[MAS02 캐시 적중] LLM 요약본을 Redis 캐시에서 초고속으로 복사해왔습니다. (Key: {meta_key})")
                                     except Exception as e:
                                         config.logger.error(f"캐시 파싱 에러: {e}")
@@ -188,9 +191,10 @@ async def patrol_active_incidents_loop(stream_keys):
 
                                 if not result:
                                     config.logger.warning(f"[캐시 미스] 메타 정보가 없어 LLM 요약을 백업 호출합니다.")
+                                    # 백업 호출 시에도 summarize_notice는 딕셔너리를 반환하므로 완벽하게 일치합니다.
                                     result = await summarize_notice(payload)
                                 
-                                # 공통 알림 발송 기동
+                                # 이제 완벽한 딕셔너리가 전달되므로 'str' has no attribute 'get' 에러가 원천 소멸합니다.
                                 await process_and_save_alerts(result, affected_user_ids)
                              
                                 for idx, user_id in enumerate(affected_user_ids):
