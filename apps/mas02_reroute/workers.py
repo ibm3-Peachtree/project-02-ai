@@ -16,6 +16,10 @@ SEOUL_GUS = [
     "성북구", "송파구", "양천구", "영등포구", "용산구", "은평구", "종로구", "중구", "중랑구"
 ]
 
+# SEOUL_GUS = [
+#     "동작구"
+# ]
+
 async def redis_incident_consumer_and_rerouter():
     """
     [MAS02 코어 워커] 

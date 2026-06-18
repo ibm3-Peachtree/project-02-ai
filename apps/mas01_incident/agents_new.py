@@ -24,8 +24,6 @@ class AgentState(TypedDict) :
     temp_outputs : List[Dict[str, Any]]
     final_outputs : List[Dict[str, Any]]
 
-kanana_client = AsyncOpenAI(base_url=config.KANANA_MODEL_02_URL, api_key="fake-key")
-
 def extract_json_array(raw_text):
     # [ 로 시작해서 ] 로 끝나는 가장 긴 구간을 찾습니다. (점진적 매칭)
     match = re.search(r'\[\s*\{.*\}\s*\]', raw_text, re.DOTALL)
@@ -65,9 +63,12 @@ async def node_ner(state: AgentState) -> List[Dict[str, Any]] :
         2. 버스 정류소 
             - 버스 정류소 이름 혹은 ARS ID(순수 5자리 숫자, 예 : 01234) 만 기재합니다
             - 버스 정류소 이름(ARS ID) 형태로 적힌 경우 ARS ID만 기재합니다
-            - 예 : 
-                - ARS ID인 경우 : 01234
+            - 예 : 종로1가(01234) , 종로1가 (01234), OOO.OOOO.OOOO(01234)
+                - ARS ID : 01234
                 - 정류소 이름 : 종로1가
+            - 예 : OOO.OOOO.OOOO(01234)
+                - ARS ID : 01234
+                - 정류소 이름 : OOO.OOOO.OOO
         3. 버스
             - 버스 노선 번호(버스 회사(OO운수 등)) 형태일 경우 버스 노선 번호(숫자 only)만 기재합니다.
         4. 지하철 노선, 역
@@ -98,8 +99,8 @@ async def node_ner(state: AgentState) -> List[Dict[str, Any]] :
             }}
         ]
     """
-    response = await kanana_client.chat.completions.create(
-        model="kakaocorp/kanana-1.5-8b-instruct-2505",
+    response = await config.model.chat.completions.create(
+        model=config.model_name,
         messages=[
             {
                 "role" : "system",
@@ -172,8 +173,8 @@ async def node_preprocess(state: AgentState) -> List[Dict[str, Any]] :
         }
     ]
     """
-    response = await kanana_client.chat.completions.create(
-        model="kakaocorp/kanana-1.5-8b-instruct-2505",
+    response = await config.model.chat.completions.create(
+        model=config.model_name,
         messages=[
             {
                 "role" : "system",
@@ -241,6 +242,12 @@ async def node_location_type_classify(state: AgentState) -> List[Dict[str, Any]]
 
     - BUSSTOP:
         1. "00000"처럼 연속된 순수 5자리 숫자로만 구성된 버스 정류소 고유 ARS ID인 경우에 해당합니다.
+        2. - 예 : 종로1가(01234) , 종로1가 (01234)
+                - ARS ID : 01234
+                - 정류소 이름 : 종로1가
+            - 예 : OOO.OOOO.OOOO(01234) , OOO.OOOO.OOOO (01234)
+                - ARS ID : 01234
+                - 정류소 이름 : OOO.OOOO.OOO
     
     - BUS:
         1. "000번", "0000번" 처럼 뒤에 번이나 버스 노선임이 명시된 버스 운행 노선 번호인 경우에 해당합니다.
@@ -274,8 +281,8 @@ async def node_location_type_classify(state: AgentState) -> List[Dict[str, Any]]
     ]
     """
     
-    response = await kanana_client.chat.completions.create(
-        model="kakaocorp/kanana-1.5-8b-instruct-2505",
+    response = await config.model.chat.completions.create(
+        model=config.model_name,
         messages=[
             {
                 "role" : "system",
@@ -309,9 +316,10 @@ async def run_sequential_generator(state: AgentState, location_type:str, instruc
         return {"temp_outputs": current_outputs}
     
     current_time = datetime.now(ZoneInfo("Asia/Seoul")).strftime("%Y-%m-%d : %H:%M:%S")
+    # current_time = "2026-06-15 : 12:00:00"
     specific_instruction = instruction.replace("{current_time}", current_time)
-    response = await kanana_client.chat.completions.create(
-        model="kakaocorp/kanana-1.5-8b-instruct-2505",
+    response = await config.model.chat.completions.create(
+        model=config.model_name,
         messages=[
             {"role": "system", "content": specific_instruction},
             {"role": "user", "content": f"교통 공지사항 정보 : {state['raw_incident_data']}\nentities : {target_entities}"}
@@ -401,11 +409,14 @@ async def node_enrich_coordinates(state: AgentState) -> List[Dict[str, Any]] :
                     end_node=details.get("end_node")
                 )
             elif location_type == "LINEAR_REFERENCE":
+                raw_start = details.get("offset_start")
+                raw_end = details.get("offset_end")
+                
                 coord_result = await resolve_linear_reference(
                     road_name=details.get("road_name"),
                     anchor_node=details.get("anchor_node"),
-                    offset_start=float(details.get("offset_start", 0)),
-                    offset_end=float(details.get("offset_end", 0))
+                    offset_start=float(raw_start) if raw_start is not None and raw_start != "" else 0.0,
+                    offset_end=float(raw_end) if raw_end is not None and raw_end != "" else 0.0
                 )
             elif location_type == "ADDRESS_POINT":
                 coord_result = await resolve_address_point(address=details.get("address"))

@@ -91,7 +91,7 @@ async def extract_routing_station_names(state:ReroutingAgentState) -> List[Dict[
         [선정 규칙]
         1. 시스템 연산 버퍼 시간(10초) 및 버스의 주행 속도를 고려할 때, 유저는 곧 [{current_idx}]번 정거장을 지나쳐 전진하게 됩니다.
         2. 따라서, `start_node`는 반드시 제공된 `user_live_route_xy` 배열 내에서 현재 인덱스보다 뒤에 위치한 인덱스, 즉 [{current_idx + 1}]번 또는 [{current_idx + 2}]번 정거장 중에서 엄선해야 합니다.
-        3. 절대 [{current_idx}]보다 작거나, 한강을 건너가 버리는 터무니없이 먼 인덱스(예: 배열 끝자락의 봉현초등학교 등)를 선택하지 마십시오. 유저가 바로 하차 및 우회할 수 있는 '직후 전방 정거장'이어야 합니다.
+        3. 절대 [{current_idx}]보다 작거나, 한강을 건너가 버리는 터무니없이 먼 인덱스(예: 배열 끝자락)를 선택하지 마십시오. 유저가 바로 하차 및 우회할 수 있는 '직후 전방 정거장'이어야 합니다.
         
         [출력 JSON 규격]
         {{
@@ -106,9 +106,8 @@ async def extract_routing_station_names(state:ReroutingAgentState) -> List[Dict[
             }}
         }}
     """
-    kanana_client = AsyncOpenAI(base_url=config.KANANA_MODEL_02_URL, api_key="fake-key")
-    response = await kanana_client.chat.completions.create(
-        model="kakaocorp/kanana-1.5-8b-instruct-2505",
+    response = await config.model.chat.completions.create(
+        model=config.model_name,
         messages=[
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": f"route_list: {user_init.get('user_live_route_xy')}\nincident: {user_init.get('incident')}"}

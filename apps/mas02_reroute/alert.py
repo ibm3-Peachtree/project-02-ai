@@ -95,8 +95,8 @@ async def process_and_save_alerts(payload: dict, affected_user_ids: list):
             
             ttl_seconds = int((end_dt - now_dt).total_seconds())
         except Exception:
-            ttl_seconds = 86400 # 파싱 에러 방어벽: 기본 24시간 지정
-            # ttl_seconds = 3600
+            # ttl_seconds = 86400 # 파싱 에러 방어벽: 기본 24시간 지정
+            ttl_seconds = 1
             
         # 사건 메타 캐시 적재 (사건 개별 TTL 작동 개시)
         await config.redis_client.set(name=meta_key, value=json.dumps(summary_result, ensure_ascii=False), ex=ttl_seconds)

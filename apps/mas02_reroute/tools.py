@@ -123,7 +123,7 @@ async def get_active_users_by_coordinates(affected_coords: list, incident_id:str
                 
                 actual_distance = calculate_distance_meters(u_lat, u_lng, aff_lat, aff_lng)
                 
-                if actual_distance <= 50.0:
+                if actual_distance <= 200.0:
                     is_user_affected = True
                     
                     # [보정] 자료형에 상관없이 안전하게 추출된 노드 리스트(또는 원본 리스트)를 append 합니다.

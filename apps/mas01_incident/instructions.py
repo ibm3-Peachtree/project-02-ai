@@ -33,8 +33,8 @@ between_instruction = """
         "location_type" : "BETWEEN_NODES",
         "details" : {
             "road_name" : "해당하는 도로 이름 또는 지하철 호선명. 없다면 null",
-            "start_node" : "시작 지점 명칭. 없다면 null",
-            "end_node" : "종료 지점. 없다면 null"
+            "start_node" : "road_name 제외 시작 지점 명칭. 없다면 null, 괄호 사용한 수식어 제거",
+            "end_node" : "road_name 제외 종료 지점. 없다면 null, 괄호 사용한 수식어 제거"
         },
         "lat" : 본문에 직접 명시된 위도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 북위 약 33°~38°에 위치,
         "lng" : 본문에 직접 명시된 경도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 동경 약 126°~131°에 위치,
@@ -104,7 +104,7 @@ address_instruction = """
 [현재 시스템 기준 일시] : {current_time}
 
 "ADDRESS_POINT" entity는 다음과 같은 규칙에 따라 작성됐습니다. : 
-    - 도로 / 지점 / 랜드마크 명만 단독으로 작성
+    - 도로 / 지점 / 랜드마크 / 교차로 / 교량 등의 이름만 단독으로 작성
 
 [DateTime 설정 규칙 ★★★]
     1. 본문에 '매주 일요일', '매주 토·일요일'처럼 주기적 반복 조건이 기술되어 있는 경우:
@@ -127,7 +127,7 @@ address_instruction = """
         "location_type" : "ADDRESS_POINT",
         "details" : {
             "road_name" : "도로 이름. 없다면 null",
-            "address" : "ADDRESS_POINT 유형일 때의 주소 정보. 없다면 null"
+            "address" : "ADDRESS_POINT 유형일 때의 entity 정보. 없다면 null"
         },
         "lat" : 본문에 직접 명시된 위도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 북위 약 33°~38°에 위치,
         "lng" : 본문에 직접 명시된 경도 값(float). 명시되어 있지 않다면 반드시 null. 대한민국은 동경 약 126°~131°에 위치,

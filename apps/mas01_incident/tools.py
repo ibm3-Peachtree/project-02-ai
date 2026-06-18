@@ -36,10 +36,10 @@ def get_si_gu_from_row(row: Any) -> Tuple[Optional[str], Optional[str]]:
 
 async def check_duplicate(incident_data: dict, mode: str) -> bool:
     try:
-        # 💡 안전 보장: 글로벌 레디스가 아직 준비 안 되었으면 무조건 통과시킴
+        # 안전 보장: 글로벌 레디스가 아직 준비 안 되었으면 무조건 통과시킴
         if not config.redis_client:
             return True
-
+        
         info_text = None
         if mode == "redis" :
             info_text = str(incident_data.get("info", "")).strip()
@@ -49,7 +49,7 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
         if not info_text:
             config.logger.warning("[Check Duplicate] info 내용이 없어 검증을 우회합니다.")
             return True
-            
+        
         hash_generator = hashlib.md5()
         hash_generator.update(info_text.encode("utf-8"))
         info_hash = hash_generator.hexdigest()
@@ -61,7 +61,6 @@ async def check_duplicate(incident_data: dict, mode: str) -> bool:
         
         if end_time_str:
             try:
-                # 💡 [교정 1] 하드코딩된 과거 날짜 대신, 현재 KST 시스템 시각 기준으로 실시간 캐싱 기간을 연산합니다.
                 end_dt = datetime.strptime(end_time_str.replace("T", " "), "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Seoul"))
                 now_dt = datetime.now(ZoneInfo("Asia/Seoul"))
                 time_delta = (end_dt - now_dt).total_seconds()
@@ -167,9 +166,12 @@ async def resolve_address_point(address:str) -> Optional[Dict[str, Any]] :
         return {"lat": lat, "lng": lng, "si": si, "gu": gu}
     else :
         try :
-            # 💡 [교정 2] 동기식 주소 변환 함수를 비동기 스레드 풀에서 안전하게 돌려 루프 정체를 차단합니다.
             res = await asyncio.get_running_loop().run_in_executor(None, kakao_address_to_latlng, address)
             if res:
+                si, gu, y, x = res
+                return {"lat" : y, "lng" : x, "si" : si, "gu" : gu}
+            else :
+                res = await asyncio.get_running_loop().run_in_executor(None, kakao_keyword_to_latlng, address)
                 si, gu, y, x = res
                 return {"lat" : y, "lng" : x, "si" : si, "gu" : gu}
         except Exception as e :

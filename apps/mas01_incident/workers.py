@@ -16,7 +16,9 @@ SEOUL_GUS = [
     "노원구", "도봉구", "동대문구", "동작구", "마포구", "서대문구", "서초구", "성동구",
     "성북구", "송파구", "양천구", "영등포구", "용산구", "은평구", "종로구", "중구", "중랑구"
 ]
-
+# SEOUL_GUS = [
+#     "동작구"
+# ]
 async def redis_topis_listener():
     """
     [Worker 1] 실시간 좌표 기반 Redis 스트림을 감시하는 백그라운드 태스크
@@ -30,9 +32,10 @@ async def redis_topis_listener():
     
     kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
     today_str = kst_now.strftime("%Y%m%d")
+    # today_str = "20260615"
     
-    # stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
-    stream_keys = ["incident:서울특별시:강북구:20260615:stream"]
+    stream_keys = [f"incident:서울특별시:{gu}:{today_str}:stream" for gu in SEOUL_GUS]
+    # stream_keys = ["incident:서울특별시:동작구:20260618:stream"]
     
     IS_TEST_MODE = True 
     
@@ -116,7 +119,7 @@ async def mysql_topis_listener():
             # 1. 현재 시스템 KST 시각 확보 (%Y-%m-%d %H:%M:%S 형식)
             kst_now = datetime.now(ZoneInfo("Asia/Seoul"))
             current_time = kst_now.strftime("%Y-%m-%d %H:%M:%S")
-            
+            # current_time = "2026-06-15 12:00:00"
             # 2. 시작 시점은 현재 이하(<=)이고, 종료 시점은 현재 초과(>)인 실시간 진행형 쿼리 정의
             sql = """
                 SELECT * FROM topis_notice 
