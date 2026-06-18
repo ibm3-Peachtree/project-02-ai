@@ -1,0 +1,6282 @@
+{
+  "019ed33f-e925-79a0-9e6a-412b19d3e687": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-14 17:00",
+        "gu": "영등포구",
+        "info": "[사고] 올림픽대로 하남 방향 여의하류→여의상류 구간 2차로 추돌사고",
+        "lat": "126.90305679797058",
+        "lng": "37.53694749951065",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-14 16:08:00",
+        "x": "191431.978787",
+        "y": "448609.246117"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 하남 방향 여의하류-여의상류",
+            "content": "올림픽대로 하남 방향 여의하류→여의상류 구간 2차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "여의상류",
+              "road_name": "올림픽대로",
+              "start_node": "여의하류"
+            },
+            "endDateTime": "2026-06-14 17:00:00",
+            "gu": "영등포구",
+            "incident_id": "c55bb87fcc1b049d8a9a5fad62a79c41",
+            "lat": 37.53694749951065,
+            "lng": 126.90305679797058,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 16:08:00"
+          }
+        ]
+      },
+      "latency": 0.05214
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 하남 방향 여의하류-여의상류",
+            "content": "올림픽대로 하남 방향 여의하류→여의상류 구간 2차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "여의상류",
+              "road_name": "올림픽대로",
+              "start_node": "여의하류"
+            },
+            "endDateTime": "2026-06-14 17:00:00",
+            "gu": "영등포구",
+            "lat": 37.53694749951065,
+            "lng": 126.90305679797058,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 16:08:00"
+          }
+        ]
+      },
+      "latency": 0.000454
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 하남 방향 여의하류-여의상류",
+            "content": "올림픽대로 하남 방향 여의하류→여의상류 구간 2차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "여의상류",
+              "road_name": "올림픽대로",
+              "start_node": "여의하류"
+            },
+            "endDateTime": "2026-06-14 17:00:00",
+            "gu": "영등포구",
+            "lat": 37.53694749951065,
+            "lng": 126.90305679797058,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 16:08:00"
+          }
+        ]
+      },
+      "latency": 0.000416
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 하남 방향 여의하류-여의상류",
+            "content": "올림픽대로 하남 방향 여의하류→여의상류 구간 2차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "여의상류",
+              "road_name": "올림픽대로",
+              "start_node": "여의하류"
+            },
+            "endDateTime": "2026-06-14 17:00:00",
+            "gu": "영등포구",
+            "lat": 37.53694749951065,
+            "lng": 126.90305679797058,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 16:08:00"
+          }
+        ]
+      },
+      "latency": 0.000473
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 하남 방향 여의하류-여의상류",
+            "content": "올림픽대로 하남 방향 여의하류→여의상류 구간 2차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "여의상류",
+              "road_name": "올림픽대로",
+              "start_node": "여의하류"
+            },
+            "endDateTime": "2026-06-14 17:00:00",
+            "gu": "영등포구",
+            "lat": 37.53694749951065,
+            "lng": 126.90305679797058,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 16:08:00"
+          }
+        ]
+      },
+      "latency": 7.2192
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000377
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000422
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "올림픽대로 하남 방향 여의하류-여의상류",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(여의하류-여의상류)이 연결되어 있으며, 도로 구간을 의미하는 '올림픽대로'와 방향, 구간 정보가 명시되어 있어 공간적 구간/범위를 나타내므로 BETWEEN_NODES로 분류."
+          }
+        ]
+      },
+      "latency": 4.025654
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "올림픽대로 하남 방향 여의하류-여의상류",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.323644
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "올림픽대로 하남 방향 여의하류-여의상류",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.545274
+    }
+  },
+  "019ed33f-afbf-74f1-ba74-bb80a0e6116e": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-14 18:00",
+        "gu": "마포구",
+        "info": "[공사] 강변북로 일산 방향 월드컵대교북단→가양대교북단 구간 1차로 시설물보수",
+        "lat": "126.88698247041889",
+        "lng": "37.56271466861943",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-14 14:25:00",
+        "x": "190014.737255",
+        "y": "451470.679464"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "content": "[공사] 강변북로 일산 방향 월드컵대교북단→가양대교북단 구간 1차로 시설물보수",
+            "details": {
+              "end_node": "가양대교북단",
+              "road_name": "강변북로",
+              "start_node": "월드컵대교북단"
+            },
+            "endDateTime": "2026-06-14 18:00:00",
+            "gu": "마포구",
+            "incident_id": "500f53d8ba1c83633be6b903b6f34a83",
+            "lat": 37.56271466861943,
+            "lng": 126.88698247041889,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 14:25:00"
+          }
+        ]
+      },
+      "latency": 0.095843
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "content": "[공사] 강변북로 일산 방향 월드컵대교북단→가양대교북단 구간 1차로 시설물보수",
+            "details": {
+              "end_node": "가양대교북단",
+              "road_name": "강변북로",
+              "start_node": "월드컵대교북단"
+            },
+            "endDateTime": "2026-06-14 18:00:00",
+            "gu": "마포구",
+            "lat": 37.56271466861943,
+            "lng": 126.88698247041889,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 14:25:00"
+          }
+        ]
+      },
+      "latency": 0.000391
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "content": "[공사] 강변북로 일산 방향 월드컵대교북단→가양대교북단 구간 1차로 시설물보수",
+            "details": {
+              "end_node": "가양대교북단",
+              "road_name": "강변북로",
+              "start_node": "월드컵대교북단"
+            },
+            "endDateTime": "2026-06-14 18:00:00",
+            "gu": "마포구",
+            "lat": 37.56271466861943,
+            "lng": 126.88698247041889,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 14:25:00"
+          }
+        ]
+      },
+      "latency": 0.000325
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "content": "[공사] 강변북로 일산 방향 월드컵대교북단→가양대교북단 구간 1차로 시설물보수",
+            "details": {
+              "end_node": "가양대교북단",
+              "road_name": "강변북로",
+              "start_node": "월드컵대교북단"
+            },
+            "endDateTime": "2026-06-14 18:00:00",
+            "gu": "마포구",
+            "lat": 37.56271466861943,
+            "lng": 126.88698247041889,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 14:25:00"
+          }
+        ]
+      },
+      "latency": 0.000414
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "content": "[공사] 강변북로 일산 방향 월드컵대교북단→가양대교북단 구간 1차로 시설물보수",
+            "details": {
+              "end_node": "가양대교북단",
+              "road_name": "강변북로",
+              "start_node": "월드컵대교북단"
+            },
+            "endDateTime": "2026-06-14 18:00:00",
+            "gu": "마포구",
+            "lat": 37.56271466861943,
+            "lng": 126.88698247041889,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-14 14:25:00"
+          }
+        ]
+      },
+      "latency": 7.521546
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00037
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000436
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(강변북로 일산 방향 월드컵대교북단 - 가양대교북단)이 연결되어 있으며, 공간적 구간/범위를 의미하므로 BETWEEN_NODES로 분류합니다."
+          }
+        ]
+      },
+      "latency": 3.824094
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "강변북로 일산 방향 월드컵대교북단 - 가양대교북단",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.490194
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "강변북로 일산 방향 월드컵대교북단 → 가양대교북단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.711952
+    }
+  },
+  "019ed33f-7a38-7f62-a6b9-79f1156f0dec": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-30 18:00:00",
+        "gu": "은평구",
+        "info": "교량 시설보수로 증산교 차량 운행제한\r-일시 : 2026.6.12.(금) 00:00~별도 공고시까지\r-장소: 불광천길→증산교(우회전로)\r-통제 : 진행방향 전면통제",
+        "lat": "126.90342567714086",
+        "lng": "37.57686972126335",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-12 00:00:00",
+        "x": "191469.133415",
+        "y": "453040.106103"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "불광천길 - 증산교",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교로 향하는 차량 운행이 전면통제됩니다. 해당 구간을 우회하여 이용해 주시기 바랍니다.",
+            "details": {
+              "end_node": "증산교",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "은평구",
+            "incident_id": "a537da30ddbfd4809afb06dd9e3daa45",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.251024
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "불광천길 - 증산교",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교로 향하는 차량 운행이 전면통제됩니다. 해당 구간을 우회하여 이용해 주시기 바랍니다.",
+            "details": {
+              "end_node": "증산교",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "은평구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000484
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교로 향하는 차량 운행이 전면통제됩니다. 해당 구간을 우회하여 이용해 주시기 바랍니다.",
+            "details": {
+              "end_node": "증산교",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "은평구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000379
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교로 향하는 차량 운행이 전면통제됩니다. 해당 구간을 우회하여 이용해 주시기 바랍니다.",
+            "details": {
+              "end_node": "증산교",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "은평구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000451
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교로 향하는 차량 운행이 전면통제됩니다. 해당 구간을 우회하여 이용해 주시기 바랍니다.",
+            "details": {
+              "end_node": "증산교",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "은평구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 7.773939
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000368
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000433
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "불광천길 - 증산교",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "불광천길과 증산교가 하이픈(-)으로 연결되어 있어 공간적 구간/범위를 의미하며, '통제'라는 동작이 해당 구간에 적용되므로 BETWEEN_NODES로 분류."
+          }
+        ]
+      },
+      "latency": 3.189321
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "불광천길 - 증산교",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.033201
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "불광천길 - 증산교",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.251495
+    }
+  },
+  "019ed331-1bdb-77d3-af75-79ba086a2ca8": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-12 18:00",
+        "gu": "성동구",
+        "info": "올림픽대로 김포방향(동호대교→한남대교) 4차로 추돌사고",
+        "lat": "127.02650391450922",
+        "lng": "37.53380779156013",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-12 16:20:00",
+        "x": "202342.563393",
+        "y": "448256.690943"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "content": "올림픽대로 김포방향(동호대교→한남대교) 4차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "한남대교",
+              "road_name": "올림픽대로 김포방향",
+              "start_node": "동호대교"
+            },
+            "endDateTime": "2026-06-12 18:00:00",
+            "gu": "성동구",
+            "incident_id": "f647e343cd2fe6b8db21604a9ac4afd1",
+            "lat": 37.53380779156013,
+            "lng": 127.02650391450922,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 16:20:00"
+          }
+        ]
+      },
+      "latency": 0.052412
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "content": "올림픽대로 김포방향(동호대교→한남대교) 4차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "한남대교",
+              "road_name": "올림픽대로 김포방향",
+              "start_node": "동호대교"
+            },
+            "endDateTime": "2026-06-12 18:00:00",
+            "gu": "성동구",
+            "lat": 37.53380779156013,
+            "lng": 127.02650391450922,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 16:20:00"
+          }
+        ]
+      },
+      "latency": 0.000475
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "content": "올림픽대로 김포방향(동호대교→한남대교) 4차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "한남대교",
+              "road_name": "올림픽대로 김포방향",
+              "start_node": "동호대교"
+            },
+            "endDateTime": "2026-06-12 18:00:00",
+            "gu": "성동구",
+            "lat": 37.53380779156013,
+            "lng": 127.02650391450922,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 16:20:00"
+          }
+        ]
+      },
+      "latency": 0.000421
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "content": "올림픽대로 김포방향(동호대교→한남대교) 4차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "한남대교",
+              "road_name": "올림픽대로 김포방향",
+              "start_node": "동호대교"
+            },
+            "endDateTime": "2026-06-12 18:00:00",
+            "gu": "성동구",
+            "lat": 37.53380779156013,
+            "lng": 127.02650391450922,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 16:20:00"
+          }
+        ]
+      },
+      "latency": 0.000459
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "content": "올림픽대로 김포방향(동호대교→한남대교) 4차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "한남대교",
+              "road_name": "올림픽대로 김포방향",
+              "start_node": "동호대교"
+            },
+            "endDateTime": "2026-06-12 18:00:00",
+            "gu": "성동구",
+            "lat": 37.53380779156013,
+            "lng": 127.02650391450922,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 16:20:00"
+          }
+        ]
+      },
+      "latency": 12.022154
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000348
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000429
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "entities의 'entity'가 하이픈(-)으로 두 지점(동호대교 - 한남대교)을 연결하는 구간 형태이며, 공간적 범위나 출발~종료 의미를 내포하고 있으므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.857081
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.356165
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "올림픽대로 김포방향(동호대교 - 한남대교)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.554751
+    }
+  },
+  "019ed330-ccb1-7d73-95c9-fe33b14824d9": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-30 18:00:00",
+        "gu": "서대문구",
+        "info": "교량 시설보수로 증산교 차량 운행제한-일시 : 2026.6.12.(금) 00:00~별도 공고시까지-장소: 불광천길→증산교(우회전로) -통제 : 진행방향 전면통제",
+        "lat": "126.90342567714086",
+        "lng": "37.57686972126335",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-12 00:00:00",
+        "x": "191469.133415",
+        "y": "453040.106103"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 운행이 전면통제됩니다. 해당 구간 우회가 필요합니다.",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "서대문구",
+            "incident_id": "a537da30ddbfd4809afb06dd9e3daa45",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.055397
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 운행이 전면통제됩니다. 해당 구간 우회가 필요합니다.",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "서대문구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000427
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 운행이 전면통제됩니다. 해당 구간 우회가 필요합니다.",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "서대문구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000384
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 운행이 전면통제됩니다. 해당 구간 우회가 필요합니다.",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "서대문구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000437
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 운행이 전면통제됩니다. 해당 구간 우회가 필요합니다.",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": "불광천길",
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "서대문구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 13.951034
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000355
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00044
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "불광천길 - 증산교(우회전로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(불광천길과 증산교(우회전로))이 연결되어 있으며, '일대', '주변' 같은 공간적 구간/범위 표현이 없으므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.627481
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "불광천길 - 증산교(우회전로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.205318
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "불광천길 → 증산교(우회전로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.405666
+    }
+  },
+  "019ed330-830a-77d0-af6b-d923be4dfd63": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-30 18:00:00",
+        "gu": "마포구",
+        "info": "교량 시설보수로 증산교 차량 운행제한\r-일시 : 2026.6.12.(금) 00:00~별도 공고시까지\r-장소: 불광천길→증산교(우회전로) \r-통제 : 진행방향 전면통제",
+        "lat": "126.90342567714086",
+        "lng": "37.57686972126335",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-12 00:00:00",
+        "x": "191469.133415",
+        "y": "453040.106103"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 전면통제",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": null,
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "마포구",
+            "incident_id": "a537da30ddbfd4809afb06dd9e3daa45",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.076157
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 전면통제",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": null,
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "마포구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000423
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 전면통제",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": null,
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "마포구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000374
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 전면통제",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": null,
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "마포구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000592
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "불광천길 - 증산교(우회전로)",
+            "content": "교량 시설보수로 인해 불광천길에서 증산교(우회전로) 구간 차량 전면통제",
+            "details": {
+              "end_node": "증산교(우회전로)",
+              "road_name": null,
+              "start_node": "불광천길"
+            },
+            "endDateTime": "2026-06-30 18:00:00",
+            "gu": "마포구",
+            "lat": 37.57686972126335,
+            "lng": 126.90342567714086,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-12 00:00:00"
+          }
+        ]
+      },
+      "latency": 12.580277
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00036
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000413
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "불광천길 - 증산교(우회전로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(불광천길과 증산교(우회전로))이 연결되어 있으며, 공간적 구간/범위를 의미하므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.268163
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "불광천길 - 증산교(우회전로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.199616
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "불광천길 → 증산교(우회전로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.418466
+    }
+  },
+  "019ed326-5202-7360-84f2-207b1cbbd94e": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-11 17:30",
+        "gu": "강남구",
+        "info": "[사고] 강남대로 국기원입구교차로 → 강남역사거리 방향 4차로 교통사고    서울청",
+        "lat": "127.03103231010398",
+        "lng": "37.49901217479763",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-11 16:41:00",
+        "x": "202744.081987",
+        "y": "444394.940075"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강남대로 국기원입구교차로 - 강남역사거리",
+            "content": "강남대로 국기원입구교차로 → 강남역사거리 방향 4차로 교통사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "강남역사거리",
+              "road_name": "강남대로",
+              "start_node": "국기원입구교차로"
+            },
+            "endDateTime": "2026-06-11 17:30",
+            "gu": "강남구",
+            "incident_id": "ebaba0e3939d897faac41d14f4513dff",
+            "lat": 37.49901217479763,
+            "lng": 127.03103231010398,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:41:00"
+          }
+        ]
+      },
+      "latency": 0.056755
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강남대로 국기원입구교차로 - 강남역사거리",
+            "content": "강남대로 국기원입구교차로 → 강남역사거리 방향 4차로 교통사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "강남역사거리",
+              "road_name": "강남대로",
+              "start_node": "국기원입구교차로"
+            },
+            "endDateTime": "2026-06-11 17:30",
+            "gu": "강남구",
+            "lat": 37.49901217479763,
+            "lng": 127.03103231010398,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:41:00"
+          }
+        ]
+      },
+      "latency": 0.000481
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강남대로 국기원입구교차로 - 강남역사거리",
+            "content": "강남대로 국기원입구교차로 → 강남역사거리 방향 4차로 교통사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "강남역사거리",
+              "road_name": "강남대로",
+              "start_node": "국기원입구교차로"
+            },
+            "endDateTime": "2026-06-11 17:30",
+            "gu": "강남구",
+            "lat": 37.49901217479763,
+            "lng": 127.03103231010398,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:41:00"
+          }
+        ]
+      },
+      "latency": 0.000409
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강남대로 국기원입구교차로 - 강남역사거리",
+            "content": "강남대로 국기원입구교차로 → 강남역사거리 방향 4차로 교통사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "강남역사거리",
+              "road_name": "강남대로",
+              "start_node": "국기원입구교차로"
+            },
+            "endDateTime": "2026-06-11 17:30",
+            "gu": "강남구",
+            "lat": 37.49901217479763,
+            "lng": 127.03103231010398,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:41:00"
+          }
+        ]
+      },
+      "latency": 0.000467
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강남대로 국기원입구교차로 - 강남역사거리",
+            "content": "강남대로 국기원입구교차로 → 강남역사거리 방향 4차로 교통사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "강남역사거리",
+              "road_name": "강남대로",
+              "start_node": "국기원입구교차로"
+            },
+            "endDateTime": "2026-06-11 17:30",
+            "gu": "강남구",
+            "lat": 37.49901217479763,
+            "lng": 127.03103231010398,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:41:00"
+          }
+        ]
+      },
+      "latency": 7.185599
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000416
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000473
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "강남대로 국기원입구교차로 - 강남역사거리",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "entities의 '강남대로 국기원입구교차로 - 강남역사거리'는 하이픈(-)으로 두 지점이 연결되어 있으며, 공간적 구간/범위를 의미하므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.55471
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "강남대로 국기원입구교차로 - 강남역사거리",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.290103
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "강남대로 국기원입구교차로 - 강남역사거리",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.512287
+    }
+  },
+  "019ed326-1146-71a0-a656-17586c74b4c5": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-09-30 00:00:00",
+        "gu": "송파구",
+        "info": "국제교류복합지구 도로개선사업관련,  탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방향 전면차단(1.6km)\r  ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월) ",
+        "lat": "127.07145865529276",
+        "lng": "37.50624403078452",
+        "si": "서울특별시",
+        "startDateTime": "2025-08-25 00:00:00",
+        "x": "206318.237564",
+        "y": "445199.529199"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방향 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "incident_id": "03bf8c6be0f2260dcf61b5d7fcccb494",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.056955
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방향 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000473
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방향 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.00039
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방향 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.00048
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방향 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 8.84329
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000358
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000426
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이를 하이픈(-)으로 연결한 구간 표현이며, 도로명과 두 지점(잠실유수지공원, 종합운동장교차로)이 명시되어 있어 공간적 구간/범위를 의미하므로 BETWEEN_NODES로 분류."
+          }
+        ]
+      },
+      "latency": 4.166056
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.471615
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.673028
+    }
+  },
+  "019ed325-bf16-7ed3-af03-8f4346548137": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-11-02 07:00:00",
+        "gu": "중구",
+        "info": "소공로 보행환경 개선공사(차로축소, 보도확장) 소공로 서울광장~한국은행앞/양방향 하위1개차로 통제",
+        "lat": "126.97864791274915",
+        "lng": "37.56470083559556",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-03 21:00:00",
+        "x": "198113.5624945798",
+        "y": "451685.3312326056"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "소공로 서울광장~한국은행앞",
+            "content": "소공로 보행환경 개선공사(차로축소, 보도확장)로 인해 소공로 서울광장~한국은행앞 구간(양방향 하위 1개 차로)이 통제됩니다.",
+            "details": {
+              "end_node": "한국은행앞",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2026-11-02 07:00:00",
+            "gu": "중구",
+            "incident_id": "446f45f445a0ef06d77eb594b1ddfc11",
+            "lat": 37.56470083559556,
+            "lng": 126.97864791274915,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-03 21:00:00"
+          }
+        ]
+      },
+      "latency": 0.056574
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "소공로 서울광장~한국은행앞",
+            "content": "소공로 보행환경 개선공사(차로축소, 보도확장)로 인해 소공로 서울광장~한국은행앞 구간(양방향 하위 1개 차로)이 통제됩니다.",
+            "details": {
+              "end_node": "한국은행앞",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2026-11-02 07:00:00",
+            "gu": "중구",
+            "lat": 37.56470083559556,
+            "lng": 126.97864791274915,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-03 21:00:00"
+          }
+        ]
+      },
+      "latency": 0.000459
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "소공로 서울광장~한국은행앞",
+            "content": "소공로 보행환경 개선공사(차로축소, 보도확장)로 인해 소공로 서울광장~한국은행앞 구간(양방향 하위 1개 차로)이 통제됩니다.",
+            "details": {
+              "end_node": "한국은행앞",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2026-11-02 07:00:00",
+            "gu": "중구",
+            "lat": 37.56470083559556,
+            "lng": 126.97864791274915,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-03 21:00:00"
+          }
+        ]
+      },
+      "latency": 0.000392
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "소공로 서울광장~한국은행앞",
+            "content": "소공로 보행환경 개선공사(차로축소, 보도확장)로 인해 소공로 서울광장~한국은행앞 구간(양방향 하위 1개 차로)이 통제됩니다.",
+            "details": {
+              "end_node": "한국은행앞",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2026-11-02 07:00:00",
+            "gu": "중구",
+            "lat": 37.56470083559556,
+            "lng": 126.97864791274915,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-03 21:00:00"
+          }
+        ]
+      },
+      "latency": 0.000459
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "소공로 서울광장~한국은행앞",
+            "content": "소공로 보행환경 개선공사(차로축소, 보도확장)로 인해 소공로 서울광장~한국은행앞 구간(양방향 하위 1개 차로)이 통제됩니다.",
+            "details": {
+              "end_node": "한국은행앞",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2026-11-02 07:00:00",
+            "gu": "중구",
+            "lat": 37.56470083559556,
+            "lng": 126.97864791274915,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-03 21:00:00"
+          }
+        ]
+      },
+      "latency": 13.613629
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000395
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000401
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "소공로 서울광장~한국은행앞",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이의 구간이 명시되어 있으며, '서울광장~한국은행앞' 형태로 하이픈(-)으로 연결된 공간적 범위를 나타내고 있습니다. 이는 지하철 역이나 노선 이름이 아니며, 도로 구간에 해당하므로 BETWEEN_NODES로 분류합니다."
+          }
+        ]
+      },
+      "latency": 4.16065
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "소공로 서울광장~한국은행앞",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.156715
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "소공로 서울광장~한국은행앞",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.372989
+    }
+  },
+  "019ed325-7125-7863-b0b4-c790fb901bfc": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-11 16:30",
+        "gu": "성동구",
+        "info": "[사고] 강변북로 구리 방향 한강대교북단→동작대교북단 구간 3차로 추돌사고 ",
+        "lat": "126.96747592729554",
+        "lng": "37.519265337683024",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-11 15:35:00",
+        "x": "197124.783436",
+        "y": "446642.826727"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "content": "강변북로 구리 방향 한강대교북단→동작대교북단 구간 3차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "동작대교북단",
+              "road_name": "강변북로",
+              "start_node": "한강대교북단"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "성동구",
+            "incident_id": "985c5224c2ec4f33454c42e976a91270",
+            "lat": 37.519265337683024,
+            "lng": 126.96747592729554,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:35:00"
+          }
+        ]
+      },
+      "latency": 0.081876
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "content": "강변북로 구리 방향 한강대교북단→동작대교북단 구간 3차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "동작대교북단",
+              "road_name": "강변북로",
+              "start_node": "한강대교북단"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "성동구",
+            "lat": 37.519265337683024,
+            "lng": 126.96747592729554,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:35:00"
+          }
+        ]
+      },
+      "latency": 0.000429
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "content": "강변북로 구리 방향 한강대교북단→동작대교북단 구간 3차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "동작대교북단",
+              "road_name": "강변북로",
+              "start_node": "한강대교북단"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "성동구",
+            "lat": 37.519265337683024,
+            "lng": 126.96747592729554,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:35:00"
+          }
+        ]
+      },
+      "latency": 0.000348
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "content": "강변북로 구리 방향 한강대교북단→동작대교북단 구간 3차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "동작대교북단",
+              "road_name": "강변북로",
+              "start_node": "한강대교북단"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "성동구",
+            "lat": 37.519265337683024,
+            "lng": 126.96747592729554,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:35:00"
+          }
+        ]
+      },
+      "latency": 0.000421
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "content": "강변북로 구리 방향 한강대교북단→동작대교북단 구간 3차로 추돌사고로 인해 해당 구간 통제 중",
+            "details": {
+              "end_node": "동작대교북단",
+              "road_name": "강변북로",
+              "start_node": "한강대교북단"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "성동구",
+            "lat": 37.519265337683024,
+            "lng": 126.96747592729554,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:35:00"
+          }
+        ]
+      },
+      "latency": 12.76315
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000375
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000443
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "entities의 'entity'가 하이픈(-)으로 두 지점(강변북로 구리 방향 한강대교북단 - 동작대교북단)을 연결하는 구간 형태를 명시하고 있으므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.924704
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "강변북로 구리 방향 한강대교북단 - 동작대교북단",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.456453
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "강변북로 구리 방향 한강대교북단→동작대교북단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.678893
+    }
+  },
+  "019ed325-3beb-78b1-b151-1bab6ae3025e": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-11 16:30",
+        "gu": "종로구",
+        "info": "[사고] 통일로 염천교앞교차로 → 서대문역  방향 4차로 교통사고    서울청",
+        "lat": "126.97136316510021",
+        "lng": "37.55961378861528",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-11 15:45:00",
+        "x": "197469.789617",
+        "y": "451120.900155"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "통일로 염천교앞교차로 - 서대문역",
+            "content": "통일로 염천교앞교차로와 서대문역 사이 구간에 교통사고로 인한 통제가 발생하였습니다.",
+            "details": {
+              "end_node": "서대문역",
+              "road_name": null,
+              "start_node": "통일로 염천교앞교차로"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "종로구",
+            "incident_id": "5d1ff5d6ef216d7cfcf2629cd31d9d11",
+            "lat": 37.55961378861528,
+            "lng": 126.97136316510021,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:45:00"
+          }
+        ]
+      },
+      "latency": 0.087967
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "통일로 염천교앞교차로 - 서대문역",
+            "content": "통일로 염천교앞교차로와 서대문역 사이 구간에 교통사고로 인한 통제가 발생하였습니다.",
+            "details": {
+              "end_node": "서대문역",
+              "road_name": null,
+              "start_node": "통일로 염천교앞교차로"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "종로구",
+            "lat": 37.55961378861528,
+            "lng": 126.97136316510021,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:45:00"
+          }
+        ]
+      },
+      "latency": 0.000565
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "통일로 염천교앞교차로 - 서대문역",
+            "content": "통일로 염천교앞교차로와 서대문역 사이 구간에 교통사고로 인한 통제가 발생하였습니다.",
+            "details": {
+              "end_node": "서대문역",
+              "road_name": null,
+              "start_node": "통일로 염천교앞교차로"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "종로구",
+            "lat": 37.55961378861528,
+            "lng": 126.97136316510021,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:45:00"
+          }
+        ]
+      },
+      "latency": 0.000473
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "통일로 염천교앞교차로 - 서대문역",
+            "content": "통일로 염천교앞교차로와 서대문역 사이 구간에 교통사고로 인한 통제가 발생하였습니다.",
+            "details": {
+              "end_node": "서대문역",
+              "road_name": null,
+              "start_node": "통일로 염천교앞교차로"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "종로구",
+            "lat": 37.55961378861528,
+            "lng": 126.97136316510021,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:45:00"
+          }
+        ]
+      },
+      "latency": 0.00054
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "통일로 염천교앞교차로 - 서대문역",
+            "content": "통일로 염천교앞교차로와 서대문역 사이 구간에 교통사고로 인한 통제가 발생하였습니다.",
+            "details": {
+              "end_node": "서대문역",
+              "road_name": null,
+              "start_node": "통일로 염천교앞교차로"
+            },
+            "endDateTime": "2026-06-11 16:30",
+            "gu": "종로구",
+            "lat": 37.55961378861528,
+            "lng": 126.97136316510021,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 15:45:00"
+          }
+        ]
+      },
+      "latency": 7.185674
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000378
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000454
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "통일로 염천교앞교차로 - 서대문역",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이의 연결 구간이 하이픈(-)으로 명시되어 있으며, 공간적 범위 또는 통제 구간을 의미하므로 BETWEEN_NODES로 분류"
+          }
+        ]
+      },
+      "latency": 3.218425
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "통일로 염천교앞교차로 - 서대문역",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.323451
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "통일로 염천교앞교차로 - 서대문역",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.5454
+    }
+  },
+  "019ed325-0100-78f1-8e5e-c4378cc91923": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-11 17:00",
+        "gu": "마포구",
+        "info": "[사고] 내부순환로 성산 방향 홍제램프→연희램프 구간 3차로 추돌사고",
+        "lat": "126.93533060494326",
+        "lng": "37.585925428562646",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-11 16:12:00",
+        "x": "194288.138809",
+        "y": "454042.767893"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "content": "내부순환로 성산 방향 홍제램프에서 연희램프 구간 3차로 추돌사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "연희램프",
+              "road_name": "내부순환로 성산 방향",
+              "start_node": "홍제램프"
+            },
+            "endDateTime": "2026-06-11 17:00:00",
+            "gu": "마포구",
+            "incident_id": "f4a9588ee97c2487dc39382859293df4",
+            "lat": 37.585925428562646,
+            "lng": 126.93533060494326,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:12:00"
+          }
+        ]
+      },
+      "latency": 0.272097
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "content": "내부순환로 성산 방향 홍제램프에서 연희램프 구간 3차로 추돌사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "연희램프",
+              "road_name": "내부순환로 성산 방향",
+              "start_node": "홍제램프"
+            },
+            "endDateTime": "2026-06-11 17:00:00",
+            "gu": "마포구",
+            "lat": 37.585925428562646,
+            "lng": 126.93533060494326,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:12:00"
+          }
+        ]
+      },
+      "latency": 0.000424
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "content": "내부순환로 성산 방향 홍제램프에서 연희램프 구간 3차로 추돌사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "연희램프",
+              "road_name": "내부순환로 성산 방향",
+              "start_node": "홍제램프"
+            },
+            "endDateTime": "2026-06-11 17:00:00",
+            "gu": "마포구",
+            "lat": 37.585925428562646,
+            "lng": 126.93533060494326,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:12:00"
+          }
+        ]
+      },
+      "latency": 0.000375
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "content": "내부순환로 성산 방향 홍제램프에서 연희램프 구간 3차로 추돌사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "연희램프",
+              "road_name": "내부순환로 성산 방향",
+              "start_node": "홍제램프"
+            },
+            "endDateTime": "2026-06-11 17:00:00",
+            "gu": "마포구",
+            "lat": 37.585925428562646,
+            "lng": 126.93533060494326,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:12:00"
+          }
+        ]
+      },
+      "latency": 0.000436
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "content": "내부순환로 성산 방향 홍제램프에서 연희램프 구간 3차로 추돌사고로 인해 해당 구간 통제 중.",
+            "details": {
+              "end_node": "연희램프",
+              "road_name": "내부순환로 성산 방향",
+              "start_node": "홍제램프"
+            },
+            "endDateTime": "2026-06-11 17:00:00",
+            "gu": "마포구",
+            "lat": 37.585925428562646,
+            "lng": 126.93533060494326,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-11 16:12:00"
+          }
+        ]
+      },
+      "latency": 7.639108
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000368
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000396
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(홍제램프, 연희램프)을 연결하는 구간 표현이며, 도로명과 램프명이 명시되어 있으나 지하철 호선이나 역명, 미터 단위 거리 정보가 없으므로 BETWEEN_NODES로 분류."
+          }
+        ]
+      },
+      "latency": 4.125794
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.350806
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "내부순환로 성산 방향 홍제램프 - 연희램프",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.590384
+    }
+  },
+  "019ed316-b67c-7523-89bf-1585f121be68": {
+    "input": {
+      "raw_incident_data": {
+        "created_at": "2026-06-09 11:42:06",
+        "end": "2026-06-09 20:30:00",
+        "gu": "중구",
+        "info": "1호선 용산역 화재로 인한 전면 통제",
+        "lat": "126.964428",
+        "lng": "37.529679",
+        "si": "서울특별시",
+        "start": "2026-06-09 09:18:00"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "1호선 용산역",
+            "content": "1호선 용산역 화재로 인한 전면 통제",
+            "details": {
+              "end_node": "용산역",
+              "road_name": "1호선",
+              "start_node": "용산역"
+            },
+            "endDateTime": "2026-06-09 20:30:00",
+            "gu": "중구",
+            "incident_id": "43bf9d6fd68edbebca992e0715cde1e7",
+            "lat": 37.529679,
+            "lng": 126.964428,
+            "location_type": "SUBWAY",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-09 09:18:00"
+          }
+        ]
+      },
+      "latency": 0.078753
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "1호선 용산역",
+            "content": "1호선 용산역 화재로 인한 전면 통제",
+            "details": {
+              "end_node": "용산역",
+              "road_name": "1호선",
+              "start_node": "용산역"
+            },
+            "endDateTime": "2026-06-09 20:30:00",
+            "gu": "중구",
+            "lat": 37.529679,
+            "lng": 126.964428,
+            "location_type": "SUBWAY",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-09 09:18:00"
+          }
+        ]
+      },
+      "latency": 0.00045
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "1호선 용산역",
+            "content": "1호선 용산역 화재로 인한 전면 통제",
+            "details": {
+              "end_node": "용산역",
+              "road_name": "1호선",
+              "start_node": "용산역"
+            },
+            "endDateTime": "2026-06-09 20:30:00",
+            "gu": "중구",
+            "lat": 37.529679,
+            "lng": 126.964428,
+            "location_type": "SUBWAY",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-09 09:18:00"
+          }
+        ]
+      },
+      "latency": 6.477516
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000363
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000363
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000396
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000469
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "1호선 용산역",
+            "location_type": "SUBWAY",
+            "obj": "통제",
+            "reason": "지하철 호선 이름(1호선)과 역 이름(용산역)이 결합되어 명시되어 있으며, 이는 지하철 인프라에 해당하므로 SUBWAY로 분류합니다."
+          }
+        ]
+      },
+      "latency": 2.896772
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "1호선 용산역",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 0.934849
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "1호선 용산역",
+            "meta": "지하철",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.2318
+    }
+  },
+  "019ed311-0b54-7f70-a856-0e198f7f36a4": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-09-30 00:00:00",
+        "gu": "강남구",
+        "info": "국제교류복합지구 도로개선사업관련,  탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r  ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월) ",
+        "lat": "127.07145865529276",
+        "lng": "37.50624403078452",
+        "si": "서울특별시",
+        "startDateTime": "2025-08-25 00:00:00",
+        "x": "206318.237564",
+        "y": "445199.529199"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "incident_id": "03bf8c6be0f2260dcf61b5d7fcccb494",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.056782
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000394
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000358
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000438
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 13.749607
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000393
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00046
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이를 하이픈(-)으로 연결한 구간 형태이며, 도로명과 두 지점(잠실유수지공원, 종합운동장교차로)이 명시되어 있어 공간적 구간/범위를 의미하므로 BETWEEN_NODES로 분류."
+          }
+        ]
+      },
+      "latency": 4.199235
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.472226
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.67218
+    }
+  },
+  "019ed310-b07b-7693-af64-2fded77d9403": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-08 23:30",
+        "gu": "중구",
+        "info": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+        "lat": "126.98213713382603",
+        "lng": "37.56370332433305",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-08 16:15:00",
+        "x": "198421.810966",
+        "y": "451574.55489"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "incident_id": "2d3376c0db1c5671c0c5cd723b89741f",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          },
+          {
+            "affected": "남대문로 - 을지로1가",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "end_node": "을지로1가",
+              "road_name": null,
+              "start_node": "남대문로"
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "incident_id": "2d3376c0db1c5671c0c5cd723b89741f",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 0.11181
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          },
+          {
+            "affected": "남대문로 - 을지로1가",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "end_node": "을지로1가",
+              "road_name": null,
+              "start_node": "남대문로"
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 0.000608
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          },
+          {
+            "affected": "남대문로 - 을지로1가",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "end_node": "을지로1가",
+              "road_name": null,
+              "start_node": "남대문로"
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 0.00047
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          },
+          {
+            "affected": "남대문로 - 을지로1가",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "end_node": "을지로1가",
+              "road_name": null,
+              "start_node": "남대문로"
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 0.000566
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          },
+          {
+            "affected": "남대문로 - 을지로1가",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "end_node": "을지로1가",
+              "road_name": null,
+              "start_node": "남대문로"
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 6.678471
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 0.000639
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "한국은행앞교차로",
+            "content": "[사고] 남대문로 을지로1가 에서 한국은행앞교차로 방향 차로 교통사고 서울청",
+            "details": {
+              "address": "서울특별시 중구 남대문로 을지로1가",
+              "road_name": null
+            },
+            "endDateTime": "2026-06-08 23:30:00",
+            "gu": "중구",
+            "lat": 37.56370332433305,
+            "lng": 126.98213713382603,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 16:15:00"
+          }
+        ]
+      },
+      "latency": 6.811654
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "남대문로 - 을지로1가",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "남대문로와 을지로1가를 하이픈(-)으로 연결한 구간 표현으로, 공간적 범위 또는 통제 구간을 의미하므로 BETWEEN_NODES에 해당합니다."
+          },
+          {
+            "entity": "한국은행앞교차로",
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "reason": "한국은행앞교차로는 특정 지점(랜드마크, 교차로 등) 명시로 ADDRESS_POINT에 해당합니다."
+          }
+        ]
+      },
+      "latency": 5.438648
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "남대문로 - 을지로1가",
+            "obj": "통제"
+          },
+          {
+            "entity": "한국은행앞교차로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.623862
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "남대문로 - 을지로1가",
+            "meta": "도로",
+            "obj": "통제"
+          },
+          {
+            "entity": "한국은행앞교차로",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 2.412587
+    }
+  },
+  "019ed310-781a-7a62-a44f-a36fb784a26e": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-09-30 00:00:00",
+        "gu": "강남구",
+        "info": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r  ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+        "lat": "127.07145865529276",
+        "lng": "37.50624403078452",
+        "si": "서울특별시",
+        "startDateTime": "2025-08-25 00:00:00",
+        "x": "206318.237564",
+        "y": "445199.529199"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "incident_id": "03bf8c6be0f2260dcf61b5d7fcccb494",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.061156
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000473
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000366
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000445
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "강남구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 7.991451
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00044
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000506
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이를 하이픈(-)으로 연결한 구간 형태이며, 공간적 범위를 나타내므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.167324
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.471731
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.67281
+    }
+  },
+  "019ed30f-fe06-7c40-ae2a-13740a9ded35": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2030-05-04 00:00:00",
+        "gu": "강남구",
+        "info": "탄천나들목 및 봉은교 구조개선공사-일시 : 26.4.7.(화) 10:00~30.5.3.(금) 23:59- 장소 : 탄천나들목밑 탄천동로 본선- 통제 : 양방향 전면통제",
+        "lat": "127.06971782330962",
+        "lng": "37.5173086946366",
+        "si": "서울특별시",
+        "startDateTime": "2026-04-07 10:00:00",
+        "x": "206163.4066056019",
+        "y": "446427.4506882597"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로(탄천나들목 ~ 탄천동로 본선) 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": "탄천동로",
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "incident_id": "8e837110d2ccc4994b4edc6f08cedff1",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 구간 역시 구조개선공사로 인해 통제 대상입니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": null,
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "incident_id": "8e837110d2ccc4994b4edc6f08cedff1",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.126366
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로(탄천나들목 ~ 탄천동로 본선) 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": "탄천동로",
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 구간 역시 구조개선공사로 인해 통제 대상입니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": null,
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000597
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로(탄천나들목 ~ 탄천동로 본선) 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": "탄천동로",
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 구간 역시 구조개선공사로 인해 통제 대상입니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": null,
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.00045
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로(탄천나들목 ~ 탄천동로 본선) 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": "탄천동로",
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 구간 역시 구조개선공사로 인해 통제 대상입니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": null,
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000552
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로(탄천나들목 ~ 탄천동로 본선) 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": "탄천동로",
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목 (탄천나들목 - 탄천동로 본선)",
+            "content": "탄천나들목 구간 역시 구조개선공사로 인해 통제 대상입니다.",
+            "details": {
+              "end_node": "탄천동로 본선",
+              "road_name": null,
+              "start_node": "탄천나들목"
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 21.633088
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000394
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000442
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "탄천나들목 및 봉은교 구조개선공사-일시 ~ 장소 : 탄천나들목밑 탄천동로 본선 구간 명시, 하이픈(-)으로 두 지점(나들목 ~ 탄천동로 본선) 연결되어 공간적 구간/범위 의미"
+          },
+          {
+            "entity": "탄천나들목",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "탄천나들목 명시 및 '통제' 대상으로 지정되어 교통 인프라 위치/구간 정보"
+          }
+        ]
+      },
+      "latency": 6.04519
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로",
+            "obj": "통제"
+          },
+          {
+            "entity": "탄천나들목",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.328383
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로",
+            "meta": "도로",
+            "obj": "통제"
+          },
+          {
+            "entity": "탄천나들목",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 2.105633
+    }
+  },
+  "019ed30f-c7d6-7100-9923-7b31c35e3461": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-30 23:00:00",
+        "gu": "중구",
+        "info": "[사고/전면통제] 서소문로 경찰청교차로↔서울아리수본부앞 삼거리 양방향 전면통제",
+        "lat": "126.96754341430831",
+        "lng": "37.561515053003845",
+        "si": "서울특별시",
+        "startDateTime": "2026-05-26 15:25:00",
+        "x": "197132.368018",
+        "y": "451332.027718"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "content": "[사고/전면통제] 서소문로 경찰청교차로↔서울아리수본부앞 삼거리 양방향 전면통제",
+            "details": {
+              "end_node": "서울아리수본부앞 삼거리",
+              "road_name": null,
+              "start_node": "경찰청교차로"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "중구",
+            "incident_id": "a2957c2d064e1982c0dc9820328e42c9",
+            "lat": 37.561515053003845,
+            "lng": 126.96754341430831,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-05-26 15:25:00"
+          }
+        ]
+      },
+      "latency": 0.059125
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "content": "[사고/전면통제] 서소문로 경찰청교차로↔서울아리수본부앞 삼거리 양방향 전면통제",
+            "details": {
+              "end_node": "서울아리수본부앞 삼거리",
+              "road_name": null,
+              "start_node": "경찰청교차로"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "중구",
+            "lat": 37.561515053003845,
+            "lng": 126.96754341430831,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-05-26 15:25:00"
+          }
+        ]
+      },
+      "latency": 0.000393
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "content": "[사고/전면통제] 서소문로 경찰청교차로↔서울아리수본부앞 삼거리 양방향 전면통제",
+            "details": {
+              "end_node": "서울아리수본부앞 삼거리",
+              "road_name": null,
+              "start_node": "경찰청교차로"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "중구",
+            "lat": 37.561515053003845,
+            "lng": 126.96754341430831,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-05-26 15:25:00"
+          }
+        ]
+      },
+      "latency": 0.000374
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "content": "[사고/전면통제] 서소문로 경찰청교차로↔서울아리수본부앞 삼거리 양방향 전면통제",
+            "details": {
+              "end_node": "서울아리수본부앞 삼거리",
+              "road_name": null,
+              "start_node": "경찰청교차로"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "중구",
+            "lat": 37.561515053003845,
+            "lng": 126.96754341430831,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-05-26 15:25:00"
+          }
+        ]
+      },
+      "latency": 0.000395
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "content": "[사고/전면통제] 서소문로 경찰청교차로↔서울아리수본부앞 삼거리 양방향 전면통제",
+            "details": {
+              "end_node": "서울아리수본부앞 삼거리",
+              "road_name": null,
+              "start_node": "경찰청교차로"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "중구",
+            "lat": 37.561515053003845,
+            "lng": 126.96754341430831,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-05-26 15:25:00"
+          }
+        ]
+      },
+      "latency": 7.285027
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00042
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000428
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(경찰청교차로, 서울아리수본부앞 삼거리)이 연결되어 있으며, 공간적 구간/범위를 의미하므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.487743
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.323699
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "경찰청교차로 - 서울아리수본부앞 삼거리",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.544905
+    }
+  },
+  "019ed30f-9314-7cd0-b543-390c818ad771": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-30 23:00:00",
+        "gu": "영등포구",
+        "info": "경인로 (영등포로터리 → 서울교남단) 구간 영등포고가 철거관련 공사 시설물보수",
+        "lat": "126.91386058350247",
+        "lng": "37.519262714346226",
+        "si": "서울특별시",
+        "startDateTime": "2025-06-10 10:25:00",
+        "x": "192385.0401850186",
+        "y": "446645.5247824667"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "경인로 (영등포로터리 - 서울교남단)",
+            "content": "영등포고가 철거관련 공사 시설물보수로 인해 경인로 (영등포로터리 → 서울교남단) 구간이 통제됩니다.",
+            "details": {
+              "end_node": "서울교남단",
+              "road_name": "경인로",
+              "start_node": "영등포로터리"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "영등포구",
+            "incident_id": "1c623761aa203e8c2d783d4b830b3a53",
+            "lat": 37.519262714346226,
+            "lng": 126.91386058350247,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-06-10 10:25:00"
+          }
+        ]
+      },
+      "latency": 0.068564
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "경인로 (영등포로터리 - 서울교남단)",
+            "content": "영등포고가 철거관련 공사 시설물보수로 인해 경인로 (영등포로터리 → 서울교남단) 구간이 통제됩니다.",
+            "details": {
+              "end_node": "서울교남단",
+              "road_name": "경인로",
+              "start_node": "영등포로터리"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "영등포구",
+            "lat": 37.519262714346226,
+            "lng": 126.91386058350247,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-06-10 10:25:00"
+          }
+        ]
+      },
+      "latency": 0.000474
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "경인로 (영등포로터리 - 서울교남단)",
+            "content": "영등포고가 철거관련 공사 시설물보수로 인해 경인로 (영등포로터리 → 서울교남단) 구간이 통제됩니다.",
+            "details": {
+              "end_node": "서울교남단",
+              "road_name": "경인로",
+              "start_node": "영등포로터리"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "영등포구",
+            "lat": 37.519262714346226,
+            "lng": 126.91386058350247,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-06-10 10:25:00"
+          }
+        ]
+      },
+      "latency": 0.000409
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "경인로 (영등포로터리 - 서울교남단)",
+            "content": "영등포고가 철거관련 공사 시설물보수로 인해 경인로 (영등포로터리 → 서울교남단) 구간이 통제됩니다.",
+            "details": {
+              "end_node": "서울교남단",
+              "road_name": "경인로",
+              "start_node": "영등포로터리"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "영등포구",
+            "lat": 37.519262714346226,
+            "lng": 126.91386058350247,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-06-10 10:25:00"
+          }
+        ]
+      },
+      "latency": 0.000417
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "경인로 (영등포로터리 - 서울교남단)",
+            "content": "영등포고가 철거관련 공사 시설물보수로 인해 경인로 (영등포로터리 → 서울교남단) 구간이 통제됩니다.",
+            "details": {
+              "end_node": "서울교남단",
+              "road_name": "경인로",
+              "start_node": "영등포로터리"
+            },
+            "endDateTime": "2026-06-30 23:00:00",
+            "gu": "영등포구",
+            "lat": 37.519262714346226,
+            "lng": 126.91386058350247,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-06-10 10:25:00"
+          }
+        ]
+      },
+      "latency": 7.319042
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000345
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000425
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "경인로 (영등포로터리 - 서울교남단)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(영등포로터리, 서울교남단)을 연결하는 구간 형태이며, 도로명과 구간 정보가 명시되어 있으므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.487041
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "경인로 (영등포로터리 - 서울교남단)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.257006
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "영등포로터리 - 서울교남단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.337585
+    }
+  },
+  "019ed30f-5745-7a22-837d-c8d093e2abb3": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-09-30 00:00:00",
+        "gu": "송파구",
+        "info": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+        "lat": "127.07145865529276",
+        "lng": "37.50624403078452",
+        "si": "서울특별시",
+        "startDateTime": "2025-08-25 00:00:00",
+        "x": "206318.237564",
+        "y": "445199.529199"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "incident_id": "03bf8c6be0f2260dcf61b5d7fcccb494",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.061918
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000421
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000353
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.0004
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 8.798132
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000324
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000426
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이를 하이픈(-)으로 연결한 구간 표현이며, 공간적 범위/통제 구간을 의미하므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.320694
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.457035
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.655868
+    }
+  },
+  "019ed30f-0af3-79b3-884d-d7a5ad96b841": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-09-30 00:00:00",
+        "gu": "송파구",
+        "info": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+        "lat": "127.07145865529276",
+        "lng": "37.50624403078452",
+        "si": "서울특별시",
+        "startDateTime": "2025-08-25 00:00:00",
+        "x": "206318.237564",
+        "y": "445199.529199"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "incident_id": "03bf8c6be0f2260dcf61b5d7fcccb494",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.088085
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000393
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000391
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000444
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 12.296175
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000357
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000422
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이를 하이픈(-)으로 연결한 구간 형태이며, 도로명과 두 지점(잠실유수지공원, 종합운동장교차로)이 명시되어 있어 공간적 구간/범위를 의미합니다."
+          }
+        ]
+      },
+      "latency": 4.025697
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.45801
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.655712
+    }
+  },
+  "019ed30e-ac42-7b51-a50d-1e5414f6f29f": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-09-30 00:00:00",
+        "gu": "송파구",
+        "info": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km)\r ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+        "lat": "127.07145865529276",
+        "lng": "37.50624403078452",
+        "si": "서울특별시",
+        "startDateTime": "2025-08-25 00:00:00",
+        "x": "206318.237564",
+        "y": "445199.529199"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "incident_id": "03bf8c6be0f2260dcf61b5d7fcccb494",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.08636
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.0004
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000355
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.0004
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "content": "국제교류복합지구 도로개선사업관련, 탄천동로 (잠실유수지공원 ↔ 종합운동장교차로)양방면 전면차단(1.6km) ※ 통제기간 : 2025.8.25~ 2027.9.30(27개월)",
+            "details": {
+              "end_node": "종합운동장교차로",
+              "road_name": "탄천동로",
+              "start_node": "잠실유수지공원"
+            },
+            "endDateTime": "2026-09-30 00:00:00",
+            "gu": "송파구",
+            "lat": 37.50624403078452,
+            "lng": 127.07145865529276,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2025-08-25 00:00:00"
+          }
+        ]
+      },
+      "latency": 15.104534
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000354
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00041
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "지명과 지명 사이를 하이픈(-)으로 연결한 구간 형태이며, 도로명과 두 지점(잠실유수지공원, 종합운동장교차로)이 명시되어 있습니다. 미터 단위(1.6km)가 직접적으로 명시되어 있으나, LINEAR_REFERENCE 분류 규칙은 숫자+미터(m)가 반드시 직접적으로 결합된 경우에만 해당합니다. 본 경우는 도로명+구간이므로 BETWEEN_NODES로 분류합니다."
+          }
+        ]
+      },
+      "latency": 5.891768
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.472237
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로 (잠실유수지공원 - 종합운동장교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.673005
+    }
+  },
+  "019ed30e-5d88-7502-9960-5afb030a71b2": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-08 18:00",
+        "gu": "성동구",
+        "info": "강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+        "lat": "127.01293062322581",
+        "lng": "37.53177323394051",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-08 09:07:00",
+        "x": "201142.911446",
+        "y": "448030.628644"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "incident_id": "690a0ab2c2fd3aeb7d3460cc7ad9fff5",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.072058
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.000443
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.000407
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.000453
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 12.796616
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000403
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000462
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "entities의 'entity'가 하이픈(-)으로 두 지점(강변북로 구리 방향 한남대교북단 - 동호대교북단)을 연결하는 구간 형태를 명시하고 있으며, 공간적 범위를 나타내므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 4.126429
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.456793
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.6782
+    }
+  },
+  "019ed30e-16f5-78a2-b1bc-8666ea8c6cbe": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-08 18:00",
+        "gu": "성동구",
+        "info": "[공사] 동부간선로 의정부 방향 성수JC→성동JC 구간 1차로 녹지작업",
+        "lat": "127.02978479487837",
+        "lng": "37.54250555410823",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-08 12:06:00",
+        "x": "202632.240098",
+        "y": "449222.122901"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "성수JC - 성동JC",
+            "content": "[공사] 동부간선로 의정부 방향 성수JC→성동JC 구간 1차로 녹지작업",
+            "details": {
+              "end_node": "성동JC",
+              "road_name": "동부간선로",
+              "start_node": "성수JC"
+            },
+            "endDateTime": "2026-06-08 18:00:00",
+            "gu": "성동구",
+            "incident_id": "3175a288079af62434b3107b4a3c9098",
+            "lat": 37.54250555410823,
+            "lng": 127.02978479487837,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 12:06:00"
+          }
+        ]
+      },
+      "latency": 0.101804
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "성수JC - 성동JC",
+            "content": "[공사] 동부간선로 의정부 방향 성수JC→성동JC 구간 1차로 녹지작업",
+            "details": {
+              "end_node": "성동JC",
+              "road_name": "동부간선로",
+              "start_node": "성수JC"
+            },
+            "endDateTime": "2026-06-08 18:00:00",
+            "gu": "성동구",
+            "lat": 37.54250555410823,
+            "lng": 127.02978479487837,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 12:06:00"
+          }
+        ]
+      },
+      "latency": 0.000405
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "성수JC - 성동JC",
+            "content": "[공사] 동부간선로 의정부 방향 성수JC→성동JC 구간 1차로 녹지작업",
+            "details": {
+              "end_node": "성동JC",
+              "road_name": "동부간선로",
+              "start_node": "성수JC"
+            },
+            "endDateTime": "2026-06-08 18:00:00",
+            "gu": "성동구",
+            "lat": 37.54250555410823,
+            "lng": 127.02978479487837,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 12:06:00"
+          }
+        ]
+      },
+      "latency": 0.000386
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "성수JC - 성동JC",
+            "content": "[공사] 동부간선로 의정부 방향 성수JC→성동JC 구간 1차로 녹지작업",
+            "details": {
+              "end_node": "성동JC",
+              "road_name": "동부간선로",
+              "start_node": "성수JC"
+            },
+            "endDateTime": "2026-06-08 18:00:00",
+            "gu": "성동구",
+            "lat": 37.54250555410823,
+            "lng": 127.02978479487837,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 12:06:00"
+          }
+        ]
+      },
+      "latency": 0.000427
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "성수JC - 성동JC",
+            "content": "[공사] 동부간선로 의정부 방향 성수JC→성동JC 구간 1차로 녹지작업",
+            "details": {
+              "end_node": "성동JC",
+              "road_name": "동부간선로",
+              "start_node": "성수JC"
+            },
+            "endDateTime": "2026-06-08 18:00:00",
+            "gu": "성동구",
+            "lat": 37.54250555410823,
+            "lng": 127.02978479487837,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 12:06:00"
+          }
+        ]
+      },
+      "latency": 12.456061
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000395
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00046
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "성수JC - 성동JC",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "entities의 '성수JC - 성동JC'는 하이픈(-)으로 두 지점을 연결하는 구간 표현이며, 도로 구간에 대한 작업(녹지작업)을 명시하고 있어 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.318323
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "성수JC - 성동JC",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 0.989734
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "성수JC - 성동JC",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.187323
+    }
+  },
+  "019ed30d-dab4-7bd0-b3e1-3c8390d7ca18": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-08 18:00",
+        "gu": "성동구",
+        "info": "[공사] 강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+        "lat": "127.01293062322581",
+        "lng": "37.53177323394051",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-08 09:07:00",
+        "x": "201142.911446",
+        "y": "448030.628644"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "[공사] 강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "incident_id": "690a0ab2c2fd3aeb7d3460cc7ad9fff5",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.057054
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "[공사] 강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.0004
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "[공사] 강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.000389
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "[공사] 강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 0.00042
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "content": "[공사] 강변북로 구리 방향 한남대교북단→동호대교북단 구간 4차로 시설물보수",
+            "details": {
+              "end_node": "동호대교북단",
+              "road_name": "강변북로",
+              "start_node": "한남대교북단"
+            },
+            "endDateTime": "2026-06-08 18:00",
+            "gu": "성동구",
+            "lat": 37.53177323394051,
+            "lng": 127.01293062322581,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 09:07:00"
+          }
+        ]
+      },
+      "latency": 8.09217
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000352
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000397
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "entities의 'entity'가 하이픈(-)으로 두 지점(강변북로 구리 방향 한남대교북단 - 동호대교북단)을 연결하는 구간 형태를 명시하고 있으며, 공간적 범위를 나타내므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 4.126495
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.45711
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "강변북로 구리 방향 한남대교북단 - 동호대교북단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.679124
+    }
+  },
+  "019ed30d-a209-7172-bb66-4e70aacd008d": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-08 23:00",
+        "gu": "동작구",
+        "info": "[고장] 올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량  * 발생 일시 : 2026년06월08일 15시08분",
+        "lat": "126.97431726261493",
+        "lng": "37.50578230674873",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-08 15:09:00",
+        "x": "197729.167653",
+        "y": "445146.194761"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "incident_id": "f039953994d5474dada6b0fb2062cc74",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.086135
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.000458
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.000337
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.000426
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 7.622377
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.00033
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000445
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(동작대교남단, 한강대교남단)이 연결되어 있으며, 구간 전체에 대한 통제 정보가 명시되어 있으므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.655688
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.456522
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.655378
+    }
+  },
+  "019ed30d-6941-7593-b361-b2365112efc8": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2026-06-08 23:00",
+        "gu": "동작구",
+        "info": "[고장] 올림픽대로 김포 방향 동작대교남단→한강대교남단 구간 고장차량 * 발생 일시 : 2026년06월08일 15시08분",
+        "lat": "126.97431726261493",
+        "lng": "37.50578230674873",
+        "si": "서울특별시",
+        "startDateTime": "2026-06-08 15:09:00",
+        "x": "197729.167653",
+        "y": "445146.194761"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단에서 한강대교남단 구간에 고장차량이 발생하여 해당 구간 통제 중입니다.",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로 김포 방향",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "incident_id": "f039953994d5474dada6b0fb2062cc74",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.081057
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단에서 한강대교남단 구간에 고장차량이 발생하여 해당 구간 통제 중입니다.",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로 김포 방향",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.000418
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단에서 한강대교남단 구간에 고장차량이 발생하여 해당 구간 통제 중입니다.",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로 김포 방향",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.000378
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단에서 한강대교남단 구간에 고장차량이 발생하여 해당 구간 통제 중입니다.",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로 김포 방향",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 0.000435
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "content": "올림픽대로 김포 방향 동작대교남단에서 한강대교남단 구간에 고장차량이 발생하여 해당 구간 통제 중입니다.",
+            "details": {
+              "end_node": "한강대교남단",
+              "road_name": "올림픽대로 김포 방향",
+              "start_node": "동작대교남단"
+            },
+            "endDateTime": "2026-06-08 23:00:00",
+            "gu": "동작구",
+            "lat": 37.50578230674873,
+            "lng": 126.97431726261493,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-08 15:09:00"
+          }
+        ]
+      },
+      "latency": 7.655246
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000357
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000438
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(동작대교남단, 한강대교남단)이 연결되어 있으며, 도로 구간의 시작과 끝을 나타내는 전형적인 BETWEEN_NODES 사례입니다."
+          }
+        ]
+      },
+      "latency": 3.656576
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.457412
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "올림픽대로 김포 방향 동작대교남단 - 한강대교남단",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.672573
+    }
+  },
+  "019ed30d-00f7-7b72-84cd-47cea2d265ad": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2027-03-01 00:00:00",
+        "gu": "강남구",
+        "info": "탄천나들목 및 봉은교 구조개선공사-일시 : 26.4.7(화)10:00~27.2.28(일) 23:59-장소 : 봉은교-통제 : 양방향 전면통제",
+        "lat": "127.06873568392719",
+        "lng": "37.51567164569313",
+        "si": "서울특별시",
+        "startDateTime": "2026-04-07 10:00:00",
+        "x": "206076.7132692197",
+        "y": "446245.6950463236"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "incident_id": "bf8925919094280700016f2695aa7dd2",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.087298
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목",
+            "content": "탄천나들목에 대해 통제가 시행됩니다.",
+            "details": {
+              "address": "탄천나들목",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": null,
+            "lng": null,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.327894
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목",
+            "content": "탄천나들목에 대해 통제가 시행됩니다.",
+            "details": {
+              "address": "탄천나들목",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": null,
+            "lng": null,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000359
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목",
+            "content": "탄천나들목에 대해 통제가 시행됩니다.",
+            "details": {
+              "address": "탄천나들목",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": null,
+            "lng": null,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.00035
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목",
+            "content": "탄천나들목에 대해 통제가 시행됩니다.",
+            "details": {
+              "address": "탄천나들목",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": null,
+            "lng": null,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000355
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목",
+            "content": "탄천나들목에 대해 통제가 시행됩니다.",
+            "details": {
+              "address": "탄천나들목",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": null,
+            "lng": null,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000453
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          },
+          {
+            "affected": "탄천나들목",
+            "content": "탄천나들목에 대해 통제가 시행됩니다.",
+            "details": {
+              "address": "탄천나들목",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": null,
+            "lng": null,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 16.031076
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "봉은교",
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "reason": "지명(지점명)인 '봉은교'와 '탄천나들목'이 단독으로 명시되어 있으며, 특정 교량 및 도로 구간을 의미하므로 ADDRESS_POINT로 분류"
+          },
+          {
+            "entity": "탄천나들목",
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "reason": "지명(지점명)인 '봉은교'와 '탄천나들목'이 단독으로 명시되어 있으며, 특정 교량 및 도로 구간을 의미하므로 ADDRESS_POINT로 분류"
+          }
+        ]
+      },
+      "latency": 6.199526
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "봉은교",
+            "obj": "통제"
+          },
+          {
+            "entity": "탄천나들목",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.761824
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "봉은교",
+            "meta": "도로",
+            "obj": "통제"
+          },
+          {
+            "entity": "탄천나들목",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 2.250162
+    }
+  },
+  "019ed30c-b0ce-7c13-8b77-fe1ca579fe3c": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2030-05-04 00:00:00",
+        "gu": "강남구",
+        "info": "탄천나들목 및 봉은교 구조개선공사\r-일시 : 26.4.7.(화) 10:00~30.5.3.(금) 23:59\r- 장소 : 탄천나들목밑 탄천동로 본선\r- 통제 : 양방향 전면통제",
+        "lat": "127.06971782330962",
+        "lng": "37.5173086946366",
+        "si": "서울특별시",
+        "startDateTime": "2026-04-07 10:00:00",
+        "x": "206163.4066056019",
+        "y": "446427.4506882597"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로 본선 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": null,
+              "road_name": "탄천동로",
+              "start_node": null
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "incident_id": "8e837110d2ccc4994b4edc6f08cedff1",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.133196
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "탄천동로",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로 본선 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": null,
+              "road_name": "탄천동로",
+              "start_node": null
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000446
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로 본선 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": null,
+              "road_name": "탄천동로",
+              "start_node": null
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000381
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로 본선 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": null,
+              "road_name": "탄천동로",
+              "start_node": null
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000444
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "탄천동로",
+            "content": "탄천나들목 및 봉은교 구조개선공사로 인해 탄천동로 본선 구간에 대해 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "end_node": null,
+              "road_name": "탄천동로",
+              "start_node": null
+            },
+            "endDateTime": "2030-05-04 23:59:59",
+            "gu": "강남구",
+            "lat": 37.5173086946366,
+            "lng": 127.06971782330962,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 12.987538
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000377
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000457
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "탄천동로",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "탄천동로는 도로명으로, '통제'라는 객체(obj)가 명시되어 있으나, 해당 공지에서 지하철 호선, 역명, 노선명, 숫자+미터, 버스번호, 버스정류장ID, 단일 지점 주소 등 다른 인프라 유형에 해당하지 않습니다. 도로명 전체 구간에 대한 통제이므로 LINEAR_REFERENCE가 아닌 BETWEEN_NODES로 분류합니다."
+          }
+        ]
+      },
+      "latency": 5.201233
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "탄천동로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 0.972544
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "탄천동로",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.206886
+    }
+  },
+  "019ed30c-b04a-7473-8154-03664ccb82ee": {
+    "input": {
+      "raw_incident_data": {
+        "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다.아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+        "create_date": "2026-06-04T11:09:24",
+        "created_at": null,
+        "division_code": 201,
+        "division_name": "통제안내",
+        "end_datetime": "2026-06-17T17:00:00",
+        "rating_code": 0,
+        "rating_name": "일반",
+        "seq": 5940,
+        "start_datetime": "2026-06-04T09:30:00",
+        "title": "6/4(목)~6/17(수) 동부간선도로 지하차도 건설공사에 따른 교통통제 안내",
+        "update_date": "2026-06-04T11:09:24",
+        "updated_at": "2026-06-05T00:02:10"
+      }
+    },
+    "node_enrich_coordinates": {
+      "output": null,
+      "latency": 0.725998
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "동부간선도로 창동교 교차로 - 상계교 교차로",
+            "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+            "details": {
+              "end_node": "상계교 교차로",
+              "road_name": null,
+              "start_node": "동부간선도로 창동교 교차로"
+            },
+            "endDateTime": "2026-06-17 17:00:00",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-04 09:30:00"
+          },
+          {
+            "affected": "동부간선도로",
+            "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+            "details": {
+              "end_node": null,
+              "road_name": "동부간선도로",
+              "start_node": null
+            },
+            "endDateTime": "2026-06-17 17:00:00",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-04 09:30:00"
+          }
+        ]
+      },
+      "latency": 0.000349
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "동부간선도로 창동교 교차로 - 상계교 교차로",
+            "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+            "details": {
+              "end_node": "상계교 교차로",
+              "road_name": null,
+              "start_node": "동부간선도로 창동교 교차로"
+            },
+            "endDateTime": "2026-06-17 17:00:00",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-04 09:30:00"
+          },
+          {
+            "affected": "동부간선도로",
+            "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+            "details": {
+              "end_node": null,
+              "road_name": "동부간선도로",
+              "start_node": null
+            },
+            "endDateTime": "2026-06-17 17:00:00",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-04 09:30:00"
+          }
+        ]
+      },
+      "latency": 0.000469
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "동부간선도로 창동교 교차로 - 상계교 교차로",
+            "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+            "details": {
+              "end_node": "상계교 교차로",
+              "road_name": null,
+              "start_node": "동부간선도로 창동교 교차로"
+            },
+            "endDateTime": "2026-06-17 17:00:00",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-04 09:30:00"
+          },
+          {
+            "affected": "동부간선도로",
+            "content": "동부간선도로 지하차도 건설공사관련 교통통제예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다.□통제개요○ 노선:동부간선도로○ 대상구간:동부간선도로 창동교 교차로(상계동 739) ~ 상계교 교차로 (상계동 699)○ 운영시간 :09:30~17:00(일부 1차선 이용제한)○ 운영기간 :26.6.4(목)~26.6.17(수)(기간 중 실 작업일 4일)- 세부일정 : 6.4(목) / 6.10(수) / 6.11(목) / 6.17(수)",
+            "details": {
+              "end_node": null,
+              "road_name": "동부간선도로",
+              "start_node": null
+            },
+            "endDateTime": "2026-06-17 17:00:00",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-04 09:30:00"
+          }
+        ]
+      },
+      "latency": 23.640052
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000365
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000452
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "동부간선도로 창동교 교차로 - 상계교 교차로",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 연결된 두 지점(동부간선도로 창동교 교차로 - 상계교 교차로)은 공간적 구간/범위를 의미하므로 BETWEEN_NODES에 해당합니다."
+          },
+          {
+            "entity": "동부간선도로",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "동부간선도로는 도로명 자체로, 구간이나 범위가 아닌 특정 도로 인프라를 지칭하므로 LINEAR_REFERENCE가 아닌 도로명 자체로 간주할 수 있으나, 공지에서 구간 통제의 기준이 되는 노선으로 명시되어 있으므로 BETWEEN_NODES로 분류합니다. 그러나 엄밀히 규칙에 따라 숫자+미터가 없으면 LINEAR_REFERENCE가 아니므로 BETWEEN_NODES로 분류합니다."
+          }
+        ]
+      },
+      "latency": 8.87883
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "동부간선도로 창동교 교차로 - 상계교 교차로",
+            "obj": "통제"
+          },
+          {
+            "entity": "동부간선도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 2.375664
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "동부간선도로 창동교 교차로 - 상계교 교차로",
+            "meta": "도로",
+            "obj": "통제"
+          },
+          {
+            "entity": "동부간선도로",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 2.867789
+    }
+  },
+  "019ed30c-646c-7830-9c99-0811dbb94ad1": {
+    "input": {
+      "raw_incident_data": {
+        "endDateTime": "2027-03-01 00:00:00",
+        "gu": "강남구",
+        "info": "탄천나들목 및 봉은교 구조개선공사\r-일시 : 26.4.7(화)10:00~27.2.28(일) 23:59\r-장소 : 봉은교\r-통제 : 양방향 전면통제",
+        "lat": "127.06873568392719",
+        "lng": "37.51567164569313",
+        "si": "서울특별시",
+        "startDateTime": "2026-04-07 10:00:00",
+        "x": "206076.7132692197",
+        "y": "446245.6950463236"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "incident_id": "bf8925919094280700016f2695aa7dd2",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.138754
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000382
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000341
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000363
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000396
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 0.000422
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "봉은교",
+            "content": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다. 해당 기간 동안 양방향 전면통제가 시행됩니다.",
+            "details": {
+              "address": "봉은교",
+              "road_name": null
+            },
+            "endDateTime": "2027-03-01 00:00:00",
+            "gu": "강남구",
+            "lat": 37.51567164569313,
+            "lng": 127.06873568392719,
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-04-07 10:00:00"
+          }
+        ]
+      },
+      "latency": 13.211345
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "봉은교",
+            "location_type": "ADDRESS_POINT",
+            "obj": "통제",
+            "reason": "봉은교는 특정 교량 명칭(지명)으로 단독 명시되어 있으며, 별도의 거리 정보나 노선명, 역명, 구간명이 없으므로 ADDRESS_POINT에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.574812
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "봉은교",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.216297
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "봉은교",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.399765
+    }
+  },
+  "019ed30c-63be-7fc0-9213-0c0fb5c6e4b1": {
+    "input": {
+      "raw_incident_data": {
+        "content": "소공로 차로 운영 변경 및 공사로 인해 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사명 : 소공로 보행환경 개선공사 ○ 위치 : 소공로(서울광장 ~ 한국은행 앞 교차로 간. 470m)○ 공사기간 : 2026. 6 . ~ 2026. 11○ 공사내용 : 차로 축소(가변차로 폐지, 5차로 → 4차로) 및 보도 확장",
+        "create_date": "2026-05-26T09:26:20",
+        "created_at": null,
+        "division_code": 201,
+        "division_name": "통제안내",
+        "end_datetime": "2026-11-30T23:59:59",
+        "rating_code": 0,
+        "rating_name": "일반",
+        "seq": 5879,
+        "start_datetime": "2026-06-01T00:00:00",
+        "title": "소공로 차로 운영 변경 및 공사 관련 교통통제 안내",
+        "update_date": "2026-05-26T09:26:20",
+        "updated_at": "2026-05-27T00:01:58"
+      }
+    },
+    "node_apply_neo4j": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "content": "소공로 차로 운영 변경 및 공사로 인해 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사명 : 소공로 보행환경 개선공사 ○ 위치 : 소공로(서울광장 ~ 한국은행 앞 교차로 간. 470m)○ 공사기간 : 2026. 6 . ~ 2026. 11○ 공사내용 : 차로 축소(가변차로 폐지, 5차로 → 4차로) 및 보도 확장",
+            "details": {
+              "end_node": "한국은행 앞 교차로",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2099-12-31 23:59:59",
+            "gu": "중구",
+            "incident_id": "9ea9bfd6cfdda52c88d7950ce8d87b73",
+            "lat": 37.56380421920825,
+            "lng": 126.9795970511515,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-01 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.300301
+    },
+    "node_enrich_coordinates": {
+      "output": {
+        "final_outputs": [
+          {
+            "affected": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "content": "소공로 차로 운영 변경 및 공사로 인해 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사명 : 소공로 보행환경 개선공사 ○ 위치 : 소공로(서울광장 ~ 한국은행 앞 교차로 간. 470m)○ 공사기간 : 2026. 6 . ~ 2026. 11○ 공사내용 : 차로 축소(가변차로 폐지, 5차로 → 4차로) 및 보도 확장",
+            "details": {
+              "end_node": "한국은행 앞 교차로",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2099-12-31 23:59:59",
+            "gu": "중구",
+            "lat": 37.56380421920825,
+            "lng": 126.9795970511515,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-01 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.749888
+    },
+    "node_subway_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "content": "소공로 차로 운영 변경 및 공사로 인해 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사명 : 소공로 보행환경 개선공사 ○ 위치 : 소공로(서울광장 ~ 한국은행 앞 교차로 간. 470m)○ 공사기간 : 2026. 6 . ~ 2026. 11○ 공사내용 : 차로 축소(가변차로 폐지, 5차로 → 4차로) 및 보도 확장",
+            "details": {
+              "end_node": "한국은행 앞 교차로",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2099-12-31 23:59:59",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-01 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000461
+    },
+    "node_busstop_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "content": "소공로 차로 운영 변경 및 공사로 인해 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사명 : 소공로 보행환경 개선공사 ○ 위치 : 소공로(서울광장 ~ 한국은행 앞 교차로 간. 470m)○ 공사기간 : 2026. 6 . ~ 2026. 11○ 공사내용 : 차로 축소(가변차로 폐지, 5차로 → 4차로) 및 보도 확장",
+            "details": {
+              "end_node": "한국은행 앞 교차로",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2099-12-31 23:59:59",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-01 00:00:00"
+          }
+        ]
+      },
+      "latency": 0.000531
+    },
+    "node_between_parser": {
+      "output": {
+        "temp_outputs": [
+          {
+            "affected": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "content": "소공로 차로 운영 변경 및 공사로 인해 교통통제 예정입니다. 아래의 내용을 참고하시어 통행에 유의하시기 바랍니다. □ 통제개요 ○ 공사명 : 소공로 보행환경 개선공사 ○ 위치 : 소공로(서울광장 ~ 한국은행 앞 교차로 간. 470m)○ 공사기간 : 2026. 6 . ~ 2026. 11○ 공사내용 : 차로 축소(가변차로 폐지, 5차로 → 4차로) 및 보도 확장",
+            "details": {
+              "end_node": "한국은행 앞 교차로",
+              "road_name": "소공로",
+              "start_node": "서울광장"
+            },
+            "endDateTime": "2099-12-31 23:59:59",
+            "gu": null,
+            "lat": null,
+            "lng": null,
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "si": "서울특별시",
+            "startDateTime": "2026-06-01 00:00:00"
+          }
+        ]
+      },
+      "latency": 10.754785
+    },
+    "node_linear_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000427
+    },
+    "node_address_parser": {
+      "output": {
+        "temp_outputs": []
+      },
+      "latency": 0.000502
+    },
+    "node_location_type_classify": {
+      "output": {
+        "classified_entities": [
+          {
+            "entity": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "location_type": "BETWEEN_NODES",
+            "obj": "통제",
+            "reason": "하이픈(-)으로 두 지점(서울광장, 한국은행 앞 교차로)이 연결되어 있으며, 구간(범위)을 명시하고 있으므로 BETWEEN_NODES에 해당합니다."
+          }
+        ]
+      },
+      "latency": 3.803259
+    },
+    "node_preprocess": {
+      "output": {
+        "preprocessed_entities": [
+          {
+            "entity": "소공로(서울광장 - 한국은행 앞 교차로)",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 1.792703
+    },
+    "node_ner": {
+      "output": {
+        "ner_entities": [
+          {
+            "entity": "소공로(서울광장 ~ 한국은행 앞 교차로)",
+            "meta": "도로",
+            "obj": "통제"
+          }
+        ]
+      },
+      "latency": 2.174336
+    }
+  }
+}
