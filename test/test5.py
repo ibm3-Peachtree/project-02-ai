@@ -4,7 +4,7 @@ import requests
 from pprint import pprint
 
 load_dotenv()
-keyword = "한국은행 앞 교차로"
+keyword = "잠수교 남단"
 
 url = "https://dapi.kakao.com/v2/local/search/keyword.json"
 headers = {

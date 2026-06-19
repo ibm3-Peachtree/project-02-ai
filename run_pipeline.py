@@ -53,18 +53,19 @@ async def main():
 
     # 에이전트와 워커 파일들이 인프라 성공 주소를 강제로 물고 태어나도록, 
     # 모든 셋업이 완벽히 끝난 바로 이 라인에서 워커들을 동적으로 수입(Import)합니다.
-    from apps.mas01_incident.workers import redis_topis_listener, redis_stream_end_time_cleaner
+    from apps.mas01_incident.workers import redis_topis_listener, mysql_topis_listener, redis_stream_end_time_cleaner
     from apps.mas02_reroute.workers import redis_incident_consumer_and_rerouter
 
     # 격리된 태스크 스케줄링 가동
     task_topis1 = asyncio.create_task(redis_topis_listener())
+    task_topis2 = asyncio.create_task(mysql_topis_listener())
     task_reroute = asyncio.create_task(redis_incident_consumer_and_rerouter())
     task_cleaner = asyncio.create_task(redis_stream_end_time_cleaner())
 
     await asyncio.sleep(0.5)
 
     try:
-        await asyncio.gather(task_topis1, task_reroute, task_cleaner)
+        await asyncio.gather(task_topis1, task_topis2, task_reroute, task_cleaner)
     except asyncio.CancelledError:
         pass
 
